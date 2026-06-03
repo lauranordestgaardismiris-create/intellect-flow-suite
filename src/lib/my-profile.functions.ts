@@ -129,8 +129,8 @@ export const getMyProfile = createServerFn({ method: "GET" })
     return {
       profile: {
         id: profile.id, full_name: profile.full_name, email,
-        age: profile.age, gender: profile.gender, religion: profile.religion,
-        sexual_orientation: profile.sexual_orientation,
+        age: profile.age, gender: profile.gender, religion: sensitive.religion,
+        sexual_orientation: sensitive.sexual_orientation,
         job_title: profile.job_title, role_type: profile.role_type,
         company: org?.name ?? null,
         department: deptEnt?.name ?? null,
