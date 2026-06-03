@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const EducationSchema = z.object({
   degree_level: z.string().max(40).optional().nullable(),
@@ -52,18 +53,18 @@ export const submitOnboarding = createServerFn({ method: "POST" })
       const { data: org, error } = await supabase.from("organizations").insert({ name: data.org_name, created_by: userId }).select("id").single();
       if (error) throw new Error(error.message);
       orgId = org.id;
-      await supabase.from("user_roles").insert({ user_id: userId, org_id: orgId, role: "org_admin" });
+      await supabaseAdmin.from("user_roles").insert({ user_id: userId, org_id: orgId, role: "org_admin" });
       await supabase.from("entities").insert({ org_id: orgId, name: data.org_name, type: "company" });
       await supabase.from("ci_weights").insert({ org_id: orgId });
     } else {
       if (!data.invite_token) throw new Error("Invite token required");
-      const { data: inv } = await supabase.from("org_invites").select("id, org_id, role, expires_at, accepted_at").eq("token", data.invite_token).maybeSingle();
+      const { data: inv } = await supabaseAdmin.from("org_invites").select("id, org_id, role, expires_at, accepted_at").eq("token", data.invite_token).maybeSingle();
       if (!inv) throw new Error("Invalid invite");
       if (inv.accepted_at) throw new Error("Invite already used");
       if (new Date(inv.expires_at) < new Date()) throw new Error("Invite expired");
       orgId = inv.org_id;
-      await supabase.from("user_roles").insert({ user_id: userId, org_id: orgId, role: inv.role });
-      await supabase.from("org_invites").update({ accepted_at: new Date().toISOString() }).eq("id", inv.id);
+      await supabaseAdmin.from("user_roles").insert({ user_id: userId, org_id: orgId, role: inv.role });
+      await supabaseAdmin.from("org_invites").update({ accepted_at: new Date().toISOString() }).eq("id", inv.id);
     }
 
     // Ensure department + team entities
@@ -187,16 +188,12 @@ export const createInvite = createServerFn({ method: "POST" })
   });
 
 export const lookupInvite = createServerFn({ method: "POST" })
-  .inputValidator((input: { token: string }) => z.object({ token: z.string().min(8) }).parse(input))
+  .inputValidator((input: { token: string }) => z.object({ token: z.string().min(8).max(200) }).parse(input))
   .handler(async ({ data }) => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const url = process.env.SUPABASE_URL!;
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-    const sb = createClient(url, key);
-    const { data: inv } = await sb.from("org_invites").select("id, org_id, email, accepted_at, expires_at").eq("token", data.token).maybeSingle();
+    const { data: inv } = await supabaseAdmin.from("org_invites").select("id, org_id, email, accepted_at, expires_at").eq("token", data.token).maybeSingle();
     if (!inv) return { valid: false as const };
     if (inv.accepted_at) return { valid: false as const, reason: "already used" };
     if (new Date(inv.expires_at) < new Date()) return { valid: false as const, reason: "expired" };
-    const { data: org } = await sb.from("organizations").select("name").eq("id", inv.org_id).maybeSingle();
+    const { data: org } = await supabaseAdmin.from("organizations").select("name").eq("id", inv.org_id).maybeSingle();
     return { valid: true as const, email: inv.email, org_name: org?.name ?? "" };
   });

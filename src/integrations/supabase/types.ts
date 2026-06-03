@@ -617,6 +617,13 @@ export type Database = {
     }
     Functions: {
       current_org: { Args: { _user_id: string }; Returns: string }
+      get_my_sensitive_profile: {
+        Args: never
+        Returns: {
+          religion: string
+          sexual_orientation: string
+        }[]
+      }
       has_role: {
         Args: {
           _org_id: string

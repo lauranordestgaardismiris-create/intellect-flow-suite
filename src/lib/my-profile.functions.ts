@@ -44,9 +44,11 @@ export const getMyProfile = createServerFn({ method: "GET" })
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, full_name, age, gender, religion, sexual_orientation, job_title, role_type, org_id, department_entity_id, team_entity_id")
+      .select("id, full_name, age, gender, job_title, role_type, org_id, department_entity_id, team_entity_id")
       .eq("id", userId).maybeSingle();
     if (!profile) return null;
+    const { data: sensitiveRows } = await (supabase.rpc as any)("get_my_sensitive_profile");
+    const sensitive = (sensitiveRows && sensitiveRows[0]) || { religion: null, sexual_orientation: null };
 
     const [
       { data: org },
@@ -127,8 +129,8 @@ export const getMyProfile = createServerFn({ method: "GET" })
     return {
       profile: {
         id: profile.id, full_name: profile.full_name, email,
-        age: profile.age, gender: profile.gender, religion: profile.religion,
-        sexual_orientation: profile.sexual_orientation,
+        age: profile.age, gender: profile.gender, religion: sensitive.religion,
+        sexual_orientation: sensitive.sexual_orientation,
         job_title: profile.job_title, role_type: profile.role_type,
         company: org?.name ?? null,
         department: deptEnt?.name ?? null,
