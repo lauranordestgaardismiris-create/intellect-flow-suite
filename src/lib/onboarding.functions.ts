@@ -188,16 +188,12 @@ export const createInvite = createServerFn({ method: "POST" })
   });
 
 export const lookupInvite = createServerFn({ method: "POST" })
-  .inputValidator((input: { token: string }) => z.object({ token: z.string().min(8) }).parse(input))
+  .inputValidator((input: { token: string }) => z.object({ token: z.string().min(8).max(200) }).parse(input))
   .handler(async ({ data }) => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const url = process.env.SUPABASE_URL!;
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-    const sb = createClient(url, key);
-    const { data: inv } = await sb.from("org_invites").select("id, org_id, email, accepted_at, expires_at").eq("token", data.token).maybeSingle();
+    const { data: inv } = await supabaseAdmin.from("org_invites").select("id, org_id, email, accepted_at, expires_at").eq("token", data.token).maybeSingle();
     if (!inv) return { valid: false as const };
     if (inv.accepted_at) return { valid: false as const, reason: "already used" };
     if (new Date(inv.expires_at) < new Date()) return { valid: false as const, reason: "expired" };
-    const { data: org } = await sb.from("organizations").select("name").eq("id", inv.org_id).maybeSingle();
+    const { data: org } = await supabaseAdmin.from("organizations").select("name").eq("id", inv.org_id).maybeSingle();
     return { valid: true as const, email: inv.email, org_name: org?.name ?? "" };
   });
