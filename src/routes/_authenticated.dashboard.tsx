@@ -28,6 +28,7 @@ function DashboardPage() {
   const { data: status } = useQuery({ queryKey: ["profile-status"], queryFn: () => getStatus() as any });
   useEffect(() => {
     if (status && (!status.profile || !status.profile.onboarding_complete)) navigate({ to: "/onboarding" });
+    else if (status?.role === "employee") navigate({ to: "/my-profile" });
   }, [status, navigate]);
 
   const { data: snap, isLoading } = useQuery({

@@ -340,6 +340,50 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_educations: {
+        Row: {
+          created_at: string
+          degree_level: string | null
+          degree_type: string | null
+          field_of_study: string | null
+          graduation_year: number | null
+          id: string
+          position: number
+          profile_id: string
+          university: string | null
+        }
+        Insert: {
+          created_at?: string
+          degree_level?: string | null
+          degree_type?: string | null
+          field_of_study?: string | null
+          graduation_year?: number | null
+          id?: string
+          position?: number
+          profile_id: string
+          university?: string | null
+        }
+        Update: {
+          created_at?: string
+          degree_level?: string | null
+          degree_type?: string | null
+          field_of_study?: string | null
+          graduation_year?: number | null
+          id?: string
+          position?: number
+          profile_id?: string
+          university?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_educations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_languages: {
         Row: {
           language_id: string
