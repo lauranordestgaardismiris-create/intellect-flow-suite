@@ -47,7 +47,7 @@ export const getMyProfile = createServerFn({ method: "GET" })
       .select("id, full_name, age, gender, job_title, role_type, org_id, department_entity_id, team_entity_id")
       .eq("id", userId).maybeSingle();
     if (!profile) return null;
-    const { data: sensitiveRows } = await supabase.rpc("get_my_sensitive_profile");
+    const { data: sensitiveRows } = await (supabase.rpc as any)("get_my_sensitive_profile");
     const sensitive = (sensitiveRows && sensitiveRows[0]) || { religion: null, sexual_orientation: null };
 
     const [
