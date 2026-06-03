@@ -53,18 +53,18 @@ export const submitOnboarding = createServerFn({ method: "POST" })
       const { data: org, error } = await supabase.from("organizations").insert({ name: data.org_name, created_by: userId }).select("id").single();
       if (error) throw new Error(error.message);
       orgId = org.id;
-      await supabase.from("user_roles").insert({ user_id: userId, org_id: orgId, role: "org_admin" });
+      await supabaseAdmin.from("user_roles").insert({ user_id: userId, org_id: orgId, role: "org_admin" });
       await supabase.from("entities").insert({ org_id: orgId, name: data.org_name, type: "company" });
       await supabase.from("ci_weights").insert({ org_id: orgId });
     } else {
       if (!data.invite_token) throw new Error("Invite token required");
-      const { data: inv } = await supabase.from("org_invites").select("id, org_id, role, expires_at, accepted_at").eq("token", data.invite_token).maybeSingle();
+      const { data: inv } = await supabaseAdmin.from("org_invites").select("id, org_id, role, expires_at, accepted_at").eq("token", data.invite_token).maybeSingle();
       if (!inv) throw new Error("Invalid invite");
       if (inv.accepted_at) throw new Error("Invite already used");
       if (new Date(inv.expires_at) < new Date()) throw new Error("Invite expired");
       orgId = inv.org_id;
-      await supabase.from("user_roles").insert({ user_id: userId, org_id: orgId, role: inv.role });
-      await supabase.from("org_invites").update({ accepted_at: new Date().toISOString() }).eq("id", inv.id);
+      await supabaseAdmin.from("user_roles").insert({ user_id: userId, org_id: orgId, role: inv.role });
+      await supabaseAdmin.from("org_invites").update({ accepted_at: new Date().toISOString() }).eq("id", inv.id);
     }
 
     // Ensure department + team entities
