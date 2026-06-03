@@ -48,7 +48,7 @@ function CognitiveQuadrants({ a, p, r, e, title }: { a: number; p: number; r: nu
 function MyProfilePage() {
   const navigate = useNavigate();
   const fetchMine = useServerFn(getMyProfile);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<import("@/lib/my-profile.functions").MyProfilePayload | null>({
     queryKey: ["my-profile"],
     queryFn: () => fetchMine() as any,
   });
@@ -81,11 +81,11 @@ function MyProfilePage() {
   }
 
   const p = data.profile;
-  const skillsByCat = data.skills.reduce<Record<string, string[]>>((acc, s) => {
+  const skillsByCat: Record<string, string[]> = {};
+  for (const s of data.skills) {
     const cat = s.category || "Other";
-    (acc[cat] = acc[cat] || []).push(s.name);
-    return acc;
-  }, {});
+    (skillsByCat[cat] = skillsByCat[cat] || []).push(s.name);
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 space-y-6">

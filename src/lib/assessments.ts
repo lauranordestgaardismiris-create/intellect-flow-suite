@@ -191,9 +191,14 @@ export const DISC_META: Record<DiscDim, { name: string; color: string; tag: stri
 };
 
 export function discInterpretation(d: number, i: number, s: number, c: number): string {
-  const arr: { k: DiscDim; v: number }[] = [
-    { k: "D", v: d }, { k: "I", v: i }, { k: "S", v: s }, { k: "C", v: c },
-  ].sort((a, b) => b.v - a.v);
+  const arr: { k: DiscDim; v: number }[] = (
+    [
+      { k: "D" as DiscDim, v: d },
+      { k: "I" as DiscDim, v: i },
+      { k: "S" as DiscDim, v: s },
+      { k: "C" as DiscDim, v: c },
+    ]
+  ).sort((a, b) => b.v - a.v);
   const top = arr[0], second = arr[1];
   const m1 = DISC_META[top.k];
   if (second.v >= top.v - 10 && second.v > 0) {
