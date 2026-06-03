@@ -23,9 +23,16 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard" });
-  }, [user, loading, navigate]);
+  async function routeByRole() {
+    const { data: u } = await supabase.auth.getUser();
+    if (!u.user) return;
+    const { data: profile } = await supabase.from("profiles").select("onboarding_complete").eq("id", u.user.id).maybeSingle();
+    if (!profile?.onboarding_complete) { navigate({ to: "/onboarding" }); return; }
+    const { data: role } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id).limit(1).maybeSingle();
+    navigate({ to: role?.role === "org_admin" ? "/dashboard" : "/my-profile" });
+  }
+
+  useEffect(() => { if (!loading && user) routeByRole(); }, [user, loading]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,7 +41,7 @@ function LoginPage() {
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Welcome back");
-    navigate({ to: "/dashboard" });
+    await routeByRole();
   }
 
   return (

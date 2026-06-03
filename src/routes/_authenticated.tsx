@@ -28,6 +28,7 @@ function AuthLayout() {
             <span>Collective Intelligence</span>
           </Link>
           <nav className="flex items-center gap-1 text-sm">
+            <Link to="/my-profile" className="px-3 py-1.5 rounded-md hover:bg-accent" activeProps={{ className: "bg-accent" }}>My profile</Link>
             <Link to="/dashboard" className="px-3 py-1.5 rounded-md hover:bg-accent" activeProps={{ className: "bg-accent" }}>Dashboard</Link>
             <Link to="/settings" className="px-3 py-1.5 rounded-md hover:bg-accent" activeProps={{ className: "bg-accent" }}>Settings</Link>
             <button
