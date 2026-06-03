@@ -55,19 +55,23 @@ function MyProfilePage() {
 
   const alignDiff = useMemo(() => {
     const out = { align: [] as string[], differ: [] as string[] };
-    if (!data?.disc || !data?.team?.disc_avg) return out;
+    const disc = data?.disc;
+    const discAvg = data?.team?.disc_avg;
+    if (!disc || !discAvg) return out;
     const labels: Record<string, string> = { d: "Dominance", i: "Influence", s: "Steadiness", c: "Conscientiousness" };
     (["d", "i", "s", "c"] as const).forEach((k) => {
-      const delta = Math.abs(data.disc[k] - data.team.disc_avg[k]);
-      if (delta <= 8) out.align.push(`${labels[k]} (you ${data.disc[k]}% vs team ${data.team.disc_avg[k]}%)`);
-      else out.differ.push(`${labels[k]} (you ${data.disc[k]}% vs team ${data.team.disc_avg[k]}%, Δ${delta}pp)`);
+      const delta = Math.abs(disc[k] - discAvg[k]);
+      if (delta <= 8) out.align.push(`${labels[k]} (you ${disc[k]}% vs team ${discAvg[k]}%)`);
+      else out.differ.push(`${labels[k]} (you ${disc[k]}% vs team ${discAvg[k]}%, Δ${delta}pp)`);
     });
-    if (data.cognitive && data.team.cognitive_avg) {
+    const cog = data?.cognitive;
+    const cogAvg = data?.team?.cognitive_avg;
+    if (cog && cogAvg) {
       (["analytical", "practical", "relational", "experimental"] as const).forEach((k) => {
-        const delta = Math.abs(data.cognitive[k] - data.team.cognitive_avg[k]);
+        const delta = Math.abs(cog[k] - cogAvg[k]);
         const name = COG_META[k].name;
-        if (delta <= 8) out.align.push(`${name} thinking (you ${data.cognitive[k]}% vs team ${data.team.cognitive_avg[k]}%)`);
-        else out.differ.push(`${name} thinking (you ${data.cognitive[k]}% vs team ${data.team.cognitive_avg[k]}%, Δ${delta}pp)`);
+        if (delta <= 8) out.align.push(`${name} thinking (you ${cog[k]}% vs team ${cogAvg[k]}%)`);
+        else out.differ.push(`${name} thinking (you ${cog[k]}% vs team ${cogAvg[k]}%, Δ${delta}pp)`);
       });
     }
     return out;
