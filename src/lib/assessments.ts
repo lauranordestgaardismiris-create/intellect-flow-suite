@@ -1,5 +1,5 @@
 // DISC: 12 forced-choice questions. Each option maps to D / I / S / C.
-// Users pick the one most like them; we tally and normalize to 0-100.
+// Users pick the one most like them; we tally and normalize to percentages summing to 100.
 export type DiscDim = "D" | "I" | "S" | "C";
 
 export const DISC_QUESTIONS: { q: string; options: { label: string; dim: DiscDim }[] }[] = [
@@ -143,30 +143,62 @@ export const COGNITIVE_QUESTIONS: { q: string; options: { label: string; dim: Co
   ]},
 ];
 
+// Normalize a set of integer counts so they sum to exactly `total` (default 100).
+// Uses largest-remainder rounding to keep each component close to its true proportion.
+function normalizeTo(counts: Record<string, number>, total = 100): Record<string, number> {
+  const keys = Object.keys(counts);
+  const sum = keys.reduce((a, k) => a + counts[k], 0) || 1;
+  const raw = keys.map((k) => ({ k, v: (counts[k] / sum) * total }));
+  const floors = raw.map((r) => ({ k: r.k, base: Math.floor(r.v), rem: r.v - Math.floor(r.v) }));
+  let used = floors.reduce((a, r) => a + r.base, 0);
+  const remaining = total - used;
+  const sorted = [...floors].sort((a, b) => b.rem - a.rem);
+  for (let i = 0; i < remaining; i++) sorted[i % sorted.length].base += 1;
+  const out: Record<string, number> = {};
+  for (const r of floors) out[r.k] = r.base;
+  return out;
+}
+
 export function scoreDisc(answers: DiscDim[]) {
-  const tally = { D: 0, I: 0, S: 0, C: 0 };
+  const tally: Record<DiscDim, number> = { D: 0, I: 0, S: 0, C: 0 };
   for (const a of answers) tally[a]++;
-  const total = answers.length || 1;
-  const norm = {
-    d: Math.round((tally.D / total) * 100),
-    i: Math.round((tally.I / total) * 100),
-    s: Math.round((tally.S / total) * 100),
-    c: Math.round((tally.C / total) * 100),
-  };
+  const norm = normalizeTo(tally as any, 100);
   const dominant = (Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0]) as DiscDim;
-  return { ...norm, dominant };
+  return {
+    d: norm.D, i: norm.I, s: norm.S, c: norm.C,
+    dominant,
+  };
 }
 
 export function scoreCognitive(answers: CognitiveDim[]) {
-  const tally = { analytical: 0, practical: 0, relational: 0, experimental: 0 };
+  const tally: Record<CognitiveDim, number> = { analytical: 0, practical: 0, relational: 0, experimental: 0 };
   for (const a of answers) tally[a]++;
-  const total = answers.length || 1;
-  const norm = {
-    analytical: Math.round((tally.analytical / total) * 100),
-    practical: Math.round((tally.practical / total) * 100),
-    relational: Math.round((tally.relational / total) * 100),
-    experimental: Math.round((tally.experimental / total) * 100),
-  };
+  const norm = normalizeTo(tally as any, 100);
   const dominant = (Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0]) as CognitiveDim;
-  return { ...norm, dominant };
+  return {
+    analytical: norm.analytical, practical: norm.practical,
+    relational: norm.relational, experimental: norm.experimental,
+    dominant,
+  };
+}
+
+// ============ DISC presentation helpers ============
+export const DISC_META: Record<DiscDim, { name: string; color: string; tag: string; verbs: string }> = {
+  D: { name: "Dominance",         color: "#ef4444", tag: "Red",    verbs: "drive results and take decisive action" },
+  I: { name: "Influence",         color: "#facc15", tag: "Yellow", verbs: "energize teams and inspire people" },
+  S: { name: "Steadiness",        color: "#22c55e", tag: "Green",  verbs: "create stability and support others" },
+  C: { name: "Conscientiousness", color: "#3b82f6", tag: "Blue",   verbs: "ensure precision, quality and rigor" },
+};
+
+export function discInterpretation(d: number, i: number, s: number, c: number): string {
+  const arr: { k: DiscDim; v: number }[] = [
+    { k: "D", v: d }, { k: "I", v: i }, { k: "S", v: s }, { k: "C", v: c },
+  ].sort((a, b) => b.v - a.v);
+  const top = arr[0], second = arr[1];
+  const m1 = DISC_META[top.k];
+  if (second.v >= top.v - 10 && second.v > 0) {
+    const m2 = DISC_META[second.k];
+    return `Predominantly ${m1.name} with strong ${m2.name} — you ${m1.verbs} while also helping to ${m2.verbs}.`;
+  }
+  return `Predominantly ${m1.name} — you ${m1.verbs}.`;
 }
