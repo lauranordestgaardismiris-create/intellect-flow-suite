@@ -390,7 +390,7 @@ function OnboardingPage() {
 
           {step === 2 && (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Demographics</h2>
+              <h2 className="text-xl font-semibold">Identity & Background</h2>
               <p className="text-sm text-muted-foreground">All fields are optional. Used only for aggregated diversity metrics.</p>
               <div className="space-y-2">
                 <Label>Nationality (you can add more than one)</Label>
