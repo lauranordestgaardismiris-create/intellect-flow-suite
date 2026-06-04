@@ -22,7 +22,26 @@ export const Route = createFileRoute("/onboarding")({
 
 type Catalogs = { skills: { id: string; name: string; category: string | null; subcategory: string | null }[]; languages: { id: string; name: string }[] };
 
-const STEPS = ["Workspace", "Personal", "Demographics", "Education", "Professional", "Skills", "Work style", "DISC", "Cognitive", "Review"] as const;
+const STEPS = ["Workspace", "Personal", "Identity & Background", "Education", "Professional", "Skills", "Work style", "DISC", "Cognitive", "Review"] as const;
+
+// Nationality → suggested language name (matched case-insensitively against catalog)
+const NATIONALITY_LANGUAGE_MAP: Record<string, string> = {
+  danish: "Danish", german: "German", french: "French", spanish: "Spanish",
+  italian: "Italian", greek: "Greek", dutch: "Dutch", swedish: "Swedish",
+  norwegian: "Norwegian", portuguese: "Portuguese",
+};
+
+// Cognitive label helper that handles ties (co-dominant / balanced / fully balanced)
+function cognitiveDominantLabel(scores: { analytical: number; practical: number; relational: number; experimental: number }) {
+  const COG_LABEL: Record<string, string> = { analytical: "Analytical", practical: "Practical", relational: "Strategic", experimental: "Creative" };
+  const entries = (["analytical", "practical", "relational", "experimental"] as const).map((k) => ({ k, v: scores[k] }));
+  const max = Math.max(...entries.map((e) => e.v));
+  const top = entries.filter((e) => e.v === max).map((e) => COG_LABEL[e.k]);
+  if (top.length === 4) return { prefix: "Fully balanced", names: "" };
+  if (top.length === 3) return { prefix: "Balanced across", names: `${top[0]}, ${top[1]} & ${top[2]}` };
+  if (top.length === 2) return { prefix: "Co-dominant", names: `${top[0]} & ${top[1]}` };
+  return { prefix: "Dominant", names: top[0] };
+}
 
 // ---- option lists ----
 const GENDER_OPTIONS = ["Female", "Male", "Other"] as const;
@@ -106,14 +125,17 @@ function OnboardingPage() {
   const [jobTitle, setJobTitle] = useState("");
   const [roleType, setRoleType] = useState<
     "individual_contributor" | "manager" | "executive" | "intern" |
-    "senior_management" | "team_lead" | "specialist" | "consultant" | "freelancer" | "other"
+    "senior_management" | "team_lead" | "specialist" | "consultant" | "freelancer" | "other" |
+    "student_worker" | "graduate_trainee" | "analyst"
   >("individual_contributor");
-  const [yearsTotal, setYearsTotal] = useState<string>("");
-  const [yearsInRole, setYearsInRole] = useState<string>("");
+  const [yearsTotal, setYearsTotal] = useState<string>("0");
+  const [yearsInRole, setYearsInRole] = useState<string>("0");
   const [department, setDepartment] = useState("");
   const [team, setTeam] = useState("");
   const [skillIds, setSkillIds] = useState<string[]>([]);
   const [langIds, setLangIds] = useState<string[]>([]);
+  const [suggestedLangIds, setSuggestedLangIds] = useState<string[]>([]);
+  const [dismissedLangSuggestions, setDismissedLangSuggestions] = useState<string[]>([]);
   const [langSearch, setLangSearch] = useState("");
   const [openMainCats, setOpenMainCats] = useState<string[]>([]);
   const [openSubCats, setOpenSubCats] = useState<string[]>([]);
@@ -187,6 +209,34 @@ function OnboardingPage() {
     const list = q ? all.filter((l) => l.name.toLowerCase().includes(q)) : all;
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
   }, [catalogs, langSearch]);
+
+  // Auto-suggest languages from nationality. Suggested chips are visually distinct
+  // and removable; dismissed names won't be re-added even if nationality changes.
+  useEffect(() => {
+    const langs = catalogs?.languages;
+    if (!langs?.length) return;
+    const targetNames = new Set<string>();
+    for (const nat of nationalities) {
+      const mapped = NATIONALITY_LANGUAGE_MAP[nat.trim().toLowerCase()];
+      if (mapped) targetNames.add(mapped.toLowerCase());
+    }
+    // Resolve target language IDs from catalog
+    const targetIds = langs
+      .filter((l) => targetNames.has(l.name.toLowerCase()) && !dismissedLangSuggestions.includes(l.id))
+      .map((l) => l.id);
+
+    setSuggestedLangIds((prev) => {
+      // Keep only suggestions still backed by a current nationality
+      const keep = prev.filter((id) => targetIds.includes(id));
+      const toAdd = targetIds.filter((id) => !keep.includes(id));
+      return [...keep, ...toAdd];
+    });
+    setLangIds((prev) => {
+      const next = new Set(prev);
+      for (const id of targetIds) next.add(id);
+      return Array.from(next);
+    });
+  }, [nationalities, catalogs, dismissedLangSuggestions]);
 
   function toggle<T>(arr: T[], v: T): T[] {
     return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
@@ -340,7 +390,7 @@ function OnboardingPage() {
 
           {step === 2 && (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Demographics</h2>
+              <h2 className="text-xl font-semibold">Identity & Background</h2>
               <p className="text-sm text-muted-foreground">All fields are optional. Used only for aggregated diversity metrics.</p>
               <div className="space-y-2">
                 <Label>Nationality (you can add more than one)</Label>
@@ -379,11 +429,11 @@ function OnboardingPage() {
               </div>
               <div className="space-y-2">
                 <Label>Neurodivergence (optional)</Label>
-                <Input value={neurodivergence} onChange={(e) => setNeurodivergence(e.target.value)} placeholder="e.g. ADHD, Autism, Dyslexia, prefer not to say" />
+                <Input value={neurodivergence} onChange={(e) => setNeurodivergence(e.target.value)} placeholder="e.g. ADHD, Autism, Dyslexia" />
               </div>
               <div className="space-y-2">
                 <Label>Disability (optional)</Label>
-                <Input value={disability} onChange={(e) => setDisability(e.target.value)} placeholder="Specify or leave blank" />
+                <Input value={disability} onChange={(e) => setDisability(e.target.value)} placeholder="e.g. mobility, visual, hearing" />
               </div>
             </div>
           )}
@@ -462,27 +512,30 @@ function OnboardingPage() {
                 <Select value={roleType} onValueChange={(v) => setRoleType(v as any)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="executive">Executive</SelectItem>
-                    <SelectItem value="senior_management">Senior Management</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="team_lead">Team Lead</SelectItem>
+                    <SelectItem value="intern">Intern</SelectItem>
+                    <SelectItem value="student_worker">Student Worker</SelectItem>
+                    <SelectItem value="graduate_trainee">Graduate / Trainee</SelectItem>
+                    <SelectItem value="analyst">Analyst</SelectItem>
                     <SelectItem value="individual_contributor">Individual Contributor</SelectItem>
                     <SelectItem value="specialist">Specialist</SelectItem>
-                    <SelectItem value="intern">Intern</SelectItem>
                     <SelectItem value="consultant">Consultant</SelectItem>
                     <SelectItem value="freelancer">Freelancer</SelectItem>
+                    <SelectItem value="team_lead">Team Lead</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="senior_management">Senior Management</SelectItem>
+                    <SelectItem value="executive">Executive</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>Years of experience (total)</Label>
-                  <Input type="number" min={0} value={yearsTotal} onChange={(e) => setYearsTotal(e.target.value)} placeholder="e.g. 8" />
+                  <Label>Years of professional experience (total)</Label>
+                  <Input type="number" min={0} value={yearsTotal} onChange={(e) => setYearsTotal(e.target.value)} placeholder="0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Years in current role</Label>
-                  <Input type="number" min={0} value={yearsInRole} onChange={(e) => setYearsInRole(e.target.value)} placeholder="e.g. 2" />
+                  <Input type="number" min={0} value={yearsInRole} onChange={(e) => setYearsInRole(e.target.value)} placeholder="0" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -611,12 +664,38 @@ function OnboardingPage() {
                       <div className="flex flex-wrap gap-2">
                         {(catalogs?.languages ?? [])
                           .filter((l) => langIds.includes(l.id))
-                          .map((l) => (
-                            <span key={l.id} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs">
-                              {l.name}
-                              <button type="button" onClick={() => setLangIds((a) => a.filter((x) => x !== l.id))} className="text-muted-foreground hover:text-destructive">×</button>
-                            </span>
-                          ))}
+                          .map((l) => {
+                            const isSuggested = suggestedLangIds.includes(l.id);
+                            return (
+                              <span
+                                key={l.id}
+                                className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs border ${
+                                  isSuggested
+                                    ? "bg-accent/40 border-dashed text-foreground/80"
+                                    : "bg-primary/10 border-transparent"
+                                }`}
+                                title={isSuggested ? "Suggested from your nationality" : undefined}
+                              >
+                                {l.name}
+                                {isSuggested && (
+                                  <span className="ml-1 rounded-sm bg-muted px-1 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                                    Suggested
+                                  </span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLangIds((a) => a.filter((x) => x !== l.id));
+                                    setSuggestedLangIds((a) => a.filter((x) => x !== l.id));
+                                    if (isSuggested) setDismissedLangSuggestions((a) => a.includes(l.id) ? a : [...a, l.id]);
+                                  }}
+                                  className="text-muted-foreground hover:text-destructive"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            );
+                          })}
                       </div>
                     )}
                     <div className="max-h-64 overflow-y-auto flex flex-wrap gap-2 pr-1">
@@ -624,7 +703,13 @@ function OnboardingPage() {
                         <button
                           key={l.id}
                           type="button"
-                          onClick={() => setLangIds((a) => toggle(a, l.id))}
+                          onClick={() => {
+                            setLangIds((a) => toggle(a, l.id));
+                            setSuggestedLangIds((a) => a.filter((x) => x !== l.id));
+                            if (langIds.includes(l.id) && suggestedLangIds.includes(l.id)) {
+                              setDismissedLangSuggestions((a) => a.includes(l.id) ? a : [...a, l.id]);
+                            }
+                          }}
                           className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                             langIds.includes(l.id)
                               ? "bg-primary text-primary-foreground border-primary"
@@ -801,7 +886,14 @@ function OnboardingPage() {
                           </div>
                         </div>
                       ))}
-                      <p className="text-xs text-muted-foreground pt-1">Dominant: <strong className="text-foreground">{COG_LABEL[cogPreview.dominant] ?? cogPreview.dominant}</strong></p>
+                      {(() => {
+                        const { prefix, names } = cognitiveDominantLabel(cogPreview);
+                        return (
+                          <p className="text-xs text-muted-foreground pt-1">
+                            {prefix}{names ? ": " : ""}<strong className="text-foreground">{names}</strong>
+                          </p>
+                        );
+                      })()}
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">Complete the cognitive step to see your breakdown.</p>

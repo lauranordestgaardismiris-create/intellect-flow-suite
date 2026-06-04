@@ -33,6 +33,7 @@ const OnboardingSchema = z.object({
   role_type: z.enum([
     "individual_contributor", "manager", "executive", "intern",
     "senior_management", "team_lead", "specialist", "consultant", "freelancer", "other",
+    "student_worker", "graduate_trainee", "analyst",
   ]).optional().nullable(),
   years_experience_total: z.number().int().min(0).max(80).optional().nullable(),
   years_in_role: z.number().int().min(0).max(80).optional().nullable(),
