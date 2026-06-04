@@ -27,6 +27,8 @@ export type MyProfilePayload = {
     } | null;
     meta_cognition_score: number | null;
     disc_interpretation: string | null;
+    insights_summary_short: string | null;
+    insights_summary_long: string | null;
   };
   educations: Array<{
     id: string; position: number; degree_level: string | null; degree_type: string | null;
