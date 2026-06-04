@@ -861,7 +861,7 @@ function OnboardingPage() {
             return (
               <div className="space-y-6 py-2">
                 <div className="text-center space-y-1">
-                  <h2 className="text-2xl font-semibold">Your profile snapshot</h2>
+                  <h2 className="text-2xl font-semibold">Your Intelligence Insights</h2>
                   <p className="text-sm text-muted-foreground">A multi-dimensional overview from all assessments.</p>
                 </div>
 
