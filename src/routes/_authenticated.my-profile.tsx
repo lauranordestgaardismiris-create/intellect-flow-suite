@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getMyProfile } from "@/lib/my-profile.functions";
 import { DiscBar } from "@/components/disc-bar";
+import { PersonalIntelligenceProfile } from "@/components/personal-intelligence-profile";
 import { Button } from "@/components/ui/button";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend,
