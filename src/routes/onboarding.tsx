@@ -125,10 +125,11 @@ function OnboardingPage() {
   const [jobTitle, setJobTitle] = useState("");
   const [roleType, setRoleType] = useState<
     "individual_contributor" | "manager" | "executive" | "intern" |
-    "senior_management" | "team_lead" | "specialist" | "consultant" | "freelancer" | "other"
+    "senior_management" | "team_lead" | "specialist" | "consultant" | "freelancer" | "other" |
+    "student_worker" | "graduate_trainee" | "analyst"
   >("individual_contributor");
-  const [yearsTotal, setYearsTotal] = useState<string>("");
-  const [yearsInRole, setYearsInRole] = useState<string>("");
+  const [yearsTotal, setYearsTotal] = useState<string>("0");
+  const [yearsInRole, setYearsInRole] = useState<string>("0");
   const [department, setDepartment] = useState("");
   const [team, setTeam] = useState("");
   const [skillIds, setSkillIds] = useState<string[]>([]);
