@@ -190,20 +190,37 @@ export const DISC_META: Record<DiscDim, { name: string; color: string; tag: stri
   C: { name: "Conscientiousness", color: "#3b82f6", tag: "Blue",   verbs: "ensure precision, quality and rigor" },
 };
 
+// Supports balanced profiles and 1–3 dominant trait combinations.
 export function discInterpretation(d: number, i: number, s: number, c: number): string {
-  const arr: { k: DiscDim; v: number }[] = (
-    [
-      { k: "D" as DiscDim, v: d },
-      { k: "I" as DiscDim, v: i },
-      { k: "S" as DiscDim, v: s },
-      { k: "C" as DiscDim, v: c },
-    ]
-  ).sort((a, b) => b.v - a.v);
-  const top = arr[0], second = arr[1];
-  const m1 = DISC_META[top.k];
-  if (second.v >= top.v - 10 && second.v > 0) {
-    const m2 = DISC_META[second.k];
-    return `Predominantly ${m1.name} with strong ${m2.name} — you ${m1.verbs} while also helping to ${m2.verbs}.`;
+  const arr: { k: DiscDim; v: number }[] = [
+    { k: "D", v: d }, { k: "I", v: i }, { k: "S", v: s }, { k: "C", v: c },
+  ].sort((a, b) => b.v - a.v);
+  const total = arr.reduce((a, b) => a + b.v, 0);
+  if (total === 0) return "Take the DISC assessment to see your interpretation.";
+
+  // Fully balanced
+  if (arr[0].v - arr[3].v <= 6) {
+    return "Balanced profile — you adapt fluidly across Dominance, Influence, Steadiness and Conscientiousness, drawing on whichever the situation requires.";
   }
-  return `Predominantly ${m1.name} — you ${m1.verbs}.`;
+
+  const top = arr[0];
+  const dominants = arr.filter((x) => top.v - x.v <= 10 && x.v > 0);
+
+  if (dominants.length >= 3) {
+    const names = dominants.slice(0, 3).map((x) => DISC_META[x.k].name);
+    return `Tri-dominant (${names.join(" / ")}) — you flex across these three modes, ${DISC_META[dominants[0].k].verbs}, while also ${DISC_META[dominants[1].k].verbs} and ${DISC_META[dominants[2].k].verbs}.`;
+  }
+  if (dominants.length === 2) {
+    const [a, b] = dominants;
+    return `Predominantly ${DISC_META[a.k].name} with strong ${DISC_META[b.k].name} — you ${DISC_META[a.k].verbs} while also helping to ${DISC_META[b.k].verbs}.`;
+  }
+  return `Predominantly ${DISC_META[top.k].name} — you ${DISC_META[top.k].verbs}.`;
 }
+
+// Cognitive labels (Analytical, Practical, Strategic, Creative) mapped to stored dims.
+export const COGNITIVE_META: Record<CognitiveDim, { name: string; color: string }> = {
+  analytical:   { name: "Analytical", color: "#3b82f6" },
+  practical:    { name: "Practical",  color: "#22c55e" },
+  relational:   { name: "Strategic",  color: "#f59e0b" },
+  experimental: { name: "Creative",   color: "#a855f7" },
+};
