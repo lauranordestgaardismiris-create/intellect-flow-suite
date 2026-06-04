@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getMyProfile } from "@/lib/my-profile.functions";
 import { DiscBar } from "@/components/disc-bar";
+import { PersonalIntelligenceProfile } from "@/components/personal-intelligence-profile";
 import { Button } from "@/components/ui/button";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend,
@@ -128,8 +129,19 @@ function MyProfilePage() {
         </Button>
       </div>
 
+      {p.onboarding_complete && <PersonalIntelligenceProfile data={data} />}
+
+      {p.onboarding_complete && (
+        <div className="flex items-center gap-2 pt-2">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">Assessment details</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+      )}
+
       {/* Summary */}
       <div className="grid md:grid-cols-2 gap-6">
+
         <div className="rounded-xl border bg-card p-5 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Summary</h2>
           <dl className="grid grid-cols-3 gap-x-3 gap-y-2 text-sm">
