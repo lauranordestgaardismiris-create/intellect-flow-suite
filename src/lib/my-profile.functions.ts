@@ -56,7 +56,7 @@ export const getMyProfile = createServerFn({ method: "GET" })
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, full_name, age, gender, job_title, role_type, org_id, department_entity_id, team_entity_id, onboarding_complete, problem_solving_style, information_processing_style, meta_cognition_score, disc_interpretation")
+      .select("id, full_name, age, gender, job_title, role_type, org_id, department_entity_id, team_entity_id, onboarding_complete, problem_solving_style, information_processing_style, meta_cognition_score, disc_interpretation, insights_summary_short, insights_summary_long")
       .eq("id", userId).maybeSingle();
     if (!profile) return null;
     const { data: sensitiveRows } = await (supabase.rpc as any)("get_my_sensitive_profile");
