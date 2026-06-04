@@ -392,8 +392,19 @@ function OnboardingPage() {
                     <SelectItem value="individual_contributor">Individual contributor</SelectItem>
                     <SelectItem value="manager">Manager</SelectItem>
                     <SelectItem value="executive">Executive</SelectItem>
+                    <SelectItem value="intern">Intern</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Years of experience (total)</Label>
+                  <Input type="number" min={0} value={yearsTotal} onChange={(e) => setYearsTotal(e.target.value)} placeholder="e.g. 8" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Years in current role</Label>
+                  <Input type="number" min={0} value={yearsInRole} onChange={(e) => setYearsInRole(e.target.value)} placeholder="e.g. 2" />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
@@ -407,6 +418,7 @@ function OnboardingPage() {
                 </div>
                 <div className="space-y-2"><Label>Team (optional)</Label><Input value={team} onChange={(e) => setTeam(e.target.value)} placeholder="e.g. Platform" /></div>
               </div>
+
             </div>
           )}
 
