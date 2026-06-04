@@ -763,22 +763,83 @@ function OnboardingPage() {
             </div>
           )}
 
-          {step === 9 && (
-            <div className="space-y-5 py-4">
-              <div className="text-center space-y-1">
-                <h2 className="text-2xl font-semibold">Your DISC profile</h2>
-                <p className="text-sm text-muted-foreground">Here's how your answers map across the four DISC dimensions.</p>
+          {step === 9 && (() => {
+            const cogPreview = scoreCognitive(cogA.filter(Boolean) as CognitiveDim[]);
+            const COG_LABEL: Record<string, string> = { analytical: "Analytical", practical: "Practical", relational: "Strategic", experimental: "Creative" };
+            const cogBars: Array<[string, number]> = [
+              ["Analytical", cogPreview.analytical],
+              ["Practical", cogPreview.practical],
+              ["Strategic", cogPreview.relational],
+              ["Creative", cogPreview.experimental],
+            ];
+            const mcMean = Math.round((mcReflect + mcAdjust + mcBias) / 3);
+            return (
+              <div className="space-y-6 py-2">
+                <div className="text-center space-y-1">
+                  <h2 className="text-2xl font-semibold">Your profile snapshot</h2>
+                  <p className="text-sm text-muted-foreground">A multi-dimensional overview from all assessments.</p>
+                </div>
+
+                <section className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">DISC personality</p>
+                  {discA.every(Boolean) ? (
+                    <DiscBar d={discPreview.d} i={discPreview.i} s={discPreview.s} c={discPreview.c} />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Complete the DISC step to see your breakdown.</p>
+                  )}
+                </section>
+
+                <section className="space-y-2 border-t pt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cognitive thinking style</p>
+                  {cogA.every(Boolean) ? (
+                    <div className="space-y-2">
+                      {cogBars.map(([label, val]) => (
+                        <div key={label}>
+                          <div className="flex justify-between text-xs"><span>{label}</span><span className="tabular-nums text-muted-foreground">{val}</span></div>
+                          <div className="h-2 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-primary" style={{ width: `${val}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                      <p className="text-xs text-muted-foreground pt-1">Dominant: <strong className="text-foreground">{COG_LABEL[cogPreview.dominant] ?? cogPreview.dominant}</strong></p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Complete the cognitive step to see your breakdown.</p>
+                  )}
+                </section>
+
+                <section className="space-y-2 border-t pt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Work & thinking style</p>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    {([
+                      ["Collaboration", collab],["Independent", indep],
+                      ["Repetition", repet],["Innovation", idea],
+                      ["Structured problem solving", psStructured],["Exploratory problem solving", psExploratory],
+                      ["Depth", ipDepth],["Breadth", ipBreadth],
+                      ["Meta-cognition", mcMean],
+                    ] as const).map(([label, val]) => (
+                      <div key={label} className="rounded-md border bg-background p-2">
+                        <div className="text-muted-foreground">{label}</div>
+                        <div className="text-base font-semibold tabular-nums">{val}</div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="space-y-2 border-t pt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Skills & languages</p>
+                  <p className="text-sm">
+                    <strong className="text-foreground">{skillIds.length}</strong> skill{skillIds.length === 1 ? "" : "s"} ·{" "}
+                    <strong className="text-foreground">{langIds.length}</strong> language{langIds.length === 1 ? "" : "s"}
+                  </p>
+                </section>
+
+                <div className="pt-2 text-center">
+                  <Button onClick={finish} disabled={busy} size="lg">{busy ? "Submitting…" : "Submit & continue"}</Button>
+                </div>
               </div>
-              {discA.every(Boolean) ? (
-                <DiscBar d={discPreview.d} i={discPreview.i} s={discPreview.s} c={discPreview.c} />
-              ) : (
-                <p className="text-sm text-muted-foreground text-center">Complete the DISC step to see your breakdown.</p>
-              )}
-              <div className="pt-4 text-center">
-                <Button onClick={finish} disabled={busy} size="lg">{busy ? "Submitting…" : "Submit & continue"}</Button>
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {step < 9 && (
             <div className="mt-6 flex justify-between">
