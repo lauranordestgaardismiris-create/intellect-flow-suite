@@ -104,7 +104,10 @@ function OnboardingPage() {
   const [disability, setDisability] = useState("");
   const [educations, setEducations] = useState<Education[]>([emptyEdu()]);
   const [jobTitle, setJobTitle] = useState("");
-  const [roleType, setRoleType] = useState<"individual_contributor" | "manager" | "executive" | "intern">("individual_contributor");
+  const [roleType, setRoleType] = useState<
+    "individual_contributor" | "manager" | "executive" | "intern" |
+    "senior_management" | "team_lead" | "specialist" | "consultant" | "freelancer" | "other"
+  >("individual_contributor");
   const [yearsTotal, setYearsTotal] = useState<string>("");
   const [yearsInRole, setYearsInRole] = useState<string>("");
   const [department, setDepartment] = useState("");
@@ -116,6 +119,18 @@ function OnboardingPage() {
   const [indep, setIndep] = useState(60);
   const [repet, setRepet] = useState(40);
   const [idea, setIdea] = useState(60);
+  // Problem solving style
+  const [psStructured, setPsStructured] = useState(50);
+  const [psExploratory, setPsExploratory] = useState(50);
+  // Information processing style
+  const [ipDepth, setIpDepth] = useState(50);
+  const [ipBreadth, setIpBreadth] = useState(50);
+  const [ipStructured, setIpStructured] = useState(50);
+  const [ipUnstructured, setIpUnstructured] = useState(50);
+  // Meta-cognition
+  const [mcReflect, setMcReflect] = useState(60);
+  const [mcAdjust, setMcAdjust] = useState(60);
+  const [mcBias, setMcBias] = useState(60);
   const [discA, setDiscA] = useState<(DiscDim | null)[]>(Array(DISC_QUESTIONS.length).fill(null));
   const [cogA, setCogA] = useState<(CognitiveDim | null)[]>(Array(COGNITIVE_QUESTIONS.length).fill(null));
   const [busy, setBusy] = useState(false);
@@ -174,6 +189,21 @@ function OnboardingPage() {
         department_name: department || null, team_name: team || null,
         skill_ids: skillIds,
         collaboration: collab, independent_work: indep, task_repetition: repet, idea_generation: idea,
+        problem_solving_style: {
+          structured_problem_solving: psStructured,
+          exploratory_problem_solving: psExploratory,
+        },
+        information_processing_style: {
+          depth_oriented_processing: ipDepth,
+          breadth_oriented_processing: ipBreadth,
+          structured_information_preference: ipStructured,
+          unstructured_information_preference: ipUnstructured,
+        },
+        meta_cognition: {
+          reflects_before_decision: mcReflect,
+          adjusts_thinking_when_wrong: mcAdjust,
+          aware_of_personal_biases: mcBias,
+        },
         disc: { d: disc.d, i: disc.i, s: disc.s, c: disc.c, dominant: disc.dominant },
         cognitive: { analytical: cog.analytical, practical: cog.practical, relational: cog.relational, experimental: cog.experimental, dominant: cog.dominant },
       } } as any);
@@ -389,10 +419,16 @@ function OnboardingPage() {
                 <Select value={roleType} onValueChange={(v) => setRoleType(v as any)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="individual_contributor">Individual contributor</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
                     <SelectItem value="executive">Executive</SelectItem>
+                    <SelectItem value="senior_management">Senior Management</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="team_lead">Team Lead</SelectItem>
+                    <SelectItem value="individual_contributor">Individual Contributor</SelectItem>
+                    <SelectItem value="specialist">Specialist</SelectItem>
                     <SelectItem value="intern">Intern</SelectItem>
+                    <SelectItem value="consultant">Consultant</SelectItem>
+                    <SelectItem value="freelancer">Freelancer</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -467,21 +503,70 @@ function OnboardingPage() {
           {step === 6 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold">Work style</h2>
+                <h2 className="text-xl font-semibold">Work & thinking style</h2>
                 <p className="text-sm text-muted-foreground">Each slider is independent — they do not need to sum to 100.</p>
               </div>
-              {([
-                ["Collaboration / teamwork", "How much of your work is done with others.", collab, setCollab],
-                ["Independent work", "How much of your work you do alone.", indep, setIndep],
-                ["Repetitive tasks", "How much of your work is routine and repeated.", repet, setRepet],
-                ["Idea generation / innovation", "How much of your work involves creating new ideas.", idea, setIdea],
-              ] as const).map(([label, tip, val, set]) => (
-                <div key={label} className="space-y-2">
-                  <div className="flex justify-between text-sm"><Label>{label}</Label><span className="text-muted-foreground tabular-nums">{val}</span></div>
-                  <Slider value={[val as number]} onValueChange={(v) => (set as any)(v[0])} max={100} step={1} />
-                  <p className="text-xs text-muted-foreground">{tip}</p>
-                </div>
-              ))}
+
+              <section className="space-y-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Work style</p>
+                {([
+                  ["Collaboration / teamwork", "How much of your work is done with others.", collab, setCollab],
+                  ["Independent work", "How much of your work you do alone.", indep, setIndep],
+                  ["Repetitive tasks", "How much of your work is routine and repeated.", repet, setRepet],
+                  ["Idea generation / innovation", "How much of your work involves creating new ideas.", idea, setIdea],
+                ] as const).map(([label, tip, val, set]) => (
+                  <div key={label} className="space-y-2">
+                    <div className="flex justify-between text-sm"><Label>{label}</Label><span className="text-muted-foreground tabular-nums">{val}</span></div>
+                    <Slider value={[val as number]} onValueChange={(v) => (set as any)(v[0])} max={100} step={1} />
+                    <p className="text-xs text-muted-foreground">{tip}</p>
+                  </div>
+                ))}
+              </section>
+
+              <section className="space-y-4 border-t pt-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Problem-solving style</p>
+                {([
+                  ["Structured problem solving", "I follow a clear, methodical process.", psStructured, setPsStructured],
+                  ["Exploratory problem solving", "I experiment, prototype and discover as I go.", psExploratory, setPsExploratory],
+                ] as const).map(([label, tip, val, set]) => (
+                  <div key={label} className="space-y-2">
+                    <div className="flex justify-between text-sm"><Label>{label}</Label><span className="text-muted-foreground tabular-nums">{val}</span></div>
+                    <Slider value={[val as number]} onValueChange={(v) => (set as any)(v[0])} max={100} step={1} />
+                    <p className="text-xs text-muted-foreground">{tip}</p>
+                  </div>
+                ))}
+              </section>
+
+              <section className="space-y-4 border-t pt-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Information processing</p>
+                {([
+                  ["Depth-oriented", "I prefer going deep on one topic at a time.", ipDepth, setIpDepth],
+                  ["Breadth-oriented", "I prefer scanning broadly across many topics.", ipBreadth, setIpBreadth],
+                  ["Structured information", "I work best with organised, formatted info.", ipStructured, setIpStructured],
+                  ["Unstructured information", "I'm comfortable with raw, messy info.", ipUnstructured, setIpUnstructured],
+                ] as const).map(([label, tip, val, set]) => (
+                  <div key={label} className="space-y-2">
+                    <div className="flex justify-between text-sm"><Label>{label}</Label><span className="text-muted-foreground tabular-nums">{val}</span></div>
+                    <Slider value={[val as number]} onValueChange={(v) => (set as any)(v[0])} max={100} step={1} />
+                    <p className="text-xs text-muted-foreground">{tip}</p>
+                  </div>
+                ))}
+              </section>
+
+              <section className="space-y-4 border-t pt-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Meta-cognition (self-assessment)</p>
+                {([
+                  ["I reflect before making decisions.", "How often you pause to think things through.", mcReflect, setMcReflect],
+                  ["I adjust my thinking when I'm shown I'm wrong.", "How easily you update your views.", mcAdjust, setMcAdjust],
+                  ["I'm aware of my personal biases.", "How honestly you notice your own biases.", mcBias, setMcBias],
+                ] as const).map(([label, tip, val, set]) => (
+                  <div key={label} className="space-y-2">
+                    <div className="flex justify-between text-sm"><Label>{label}</Label><span className="text-muted-foreground tabular-nums">{val}</span></div>
+                    <Slider value={[val as number]} onValueChange={(v) => (set as any)(v[0])} max={100} step={1} />
+                    <p className="text-xs text-muted-foreground">{tip}</p>
+                  </div>
+                ))}
+              </section>
             </div>
           )}
 

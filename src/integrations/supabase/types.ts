@@ -450,17 +450,21 @@ export type Database = {
           created_at: string
           department_entity_id: string | null
           disability: string | null
+          disc_interpretation: string | null
           education_level: string | null
           email: string | null
           field_of_study: string | null
           full_name: string
           gender: string | null
           id: string
+          information_processing_style: Json | null
           job_title: string | null
+          meta_cognition_score: number | null
           nationalities: string[]
           neurodivergence: string | null
           onboarding_complete: boolean
           org_id: string
+          problem_solving_style: Json | null
           religion: string | null
           role_type: Database["public"]["Enums"]["role_type"] | null
           sexual_orientation: string | null
@@ -474,17 +478,21 @@ export type Database = {
           created_at?: string
           department_entity_id?: string | null
           disability?: string | null
+          disc_interpretation?: string | null
           education_level?: string | null
           email?: string | null
           field_of_study?: string | null
           full_name: string
           gender?: string | null
           id: string
+          information_processing_style?: Json | null
           job_title?: string | null
+          meta_cognition_score?: number | null
           nationalities?: string[]
           neurodivergence?: string | null
           onboarding_complete?: boolean
           org_id: string
+          problem_solving_style?: Json | null
           religion?: string | null
           role_type?: Database["public"]["Enums"]["role_type"] | null
           sexual_orientation?: string | null
@@ -498,17 +506,21 @@ export type Database = {
           created_at?: string
           department_entity_id?: string | null
           disability?: string | null
+          disc_interpretation?: string | null
           education_level?: string | null
           email?: string | null
           field_of_study?: string | null
           full_name?: string
           gender?: string | null
           id?: string
+          information_processing_style?: Json | null
           job_title?: string | null
+          meta_cognition_score?: number | null
           nationalities?: string[]
           neurodivergence?: string | null
           onboarding_complete?: boolean
           org_id?: string
+          problem_solving_style?: Json | null
           religion?: string | null
           role_type?: Database["public"]["Enums"]["role_type"] | null
           sexual_orientation?: string | null
@@ -546,16 +558,19 @@ export type Database = {
           category: string | null
           id: string
           name: string
+          subcategory: string | null
         }
         Insert: {
           category?: string | null
           id?: string
           name: string
+          subcategory?: string | null
         }
         Update: {
           category?: string | null
           id?: string
           name?: string
+          subcategory?: string | null
         }
         Relationships: []
       }
@@ -661,7 +676,17 @@ export type Database = {
         | "experimental"
       disc_type: "D" | "I" | "S" | "C"
       entity_type: "company" | "department" | "team"
-      role_type: "individual_contributor" | "manager" | "executive" | "intern"
+      role_type:
+        | "individual_contributor"
+        | "manager"
+        | "executive"
+        | "intern"
+        | "senior_management"
+        | "team_lead"
+        | "specialist"
+        | "consultant"
+        | "freelancer"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -798,7 +823,18 @@ export const Constants = {
       ],
       disc_type: ["D", "I", "S", "C"],
       entity_type: ["company", "department", "team"],
-      role_type: ["individual_contributor", "manager", "executive", "intern"],
+      role_type: [
+        "individual_contributor",
+        "manager",
+        "executive",
+        "intern",
+        "senior_management",
+        "team_lead",
+        "specialist",
+        "consultant",
+        "freelancer",
+        "other",
+      ],
     },
   },
 } as const

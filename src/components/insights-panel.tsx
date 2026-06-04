@@ -37,7 +37,8 @@ export function InsightsPanel({ members, lenses, onChangeLenses }: {
     const skillRadar = [...skillFreq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => ({ subject: k, value: v }));
 
     const disc = ["D", "I", "S", "C"].map((k) => ({ name: k, value: members.filter((m) => m.disc_dominant === k).length }));
-    const cog = ["analytical", "practical", "relational", "experimental"].map((k) => ({ name: k, value: members.filter((m) => m.cognitive_dominant === k).length }));
+    const COG_LABEL: Record<string, string> = { analytical: "Analytical", practical: "Practical", relational: "Strategic", experimental: "Creative" };
+    const cog = ["analytical", "practical", "relational", "experimental"].map((k) => ({ name: COG_LABEL[k], value: members.filter((m) => m.cognitive_dominant === k).length }));
     const scatter = members.map((m) => ({ x: m.collaboration, y: m.idea_generation, name: m.full_name }));
     const roles = ["individual_contributor", "manager", "executive"].map((k) => ({ name: k.replace("_", " "), value: members.filter((m) => m.role_type === k).length }));
 

@@ -17,6 +17,16 @@ export type MyProfilePayload = {
     team: string | null;
     department_entity_id: string | null;
     team_entity_id: string | null;
+    onboarding_complete: boolean;
+    problem_solving_style: { structured_problem_solving: number; exploratory_problem_solving: number } | null;
+    information_processing_style: {
+      depth_oriented_processing: number;
+      breadth_oriented_processing: number;
+      structured_information_preference: number;
+      unstructured_information_preference: number;
+    } | null;
+    meta_cognition_score: number | null;
+    disc_interpretation: string | null;
   };
   educations: Array<{
     id: string; position: number; degree_level: string | null; degree_type: string | null;
@@ -44,7 +54,7 @@ export const getMyProfile = createServerFn({ method: "GET" })
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, full_name, age, gender, job_title, role_type, org_id, department_entity_id, team_entity_id")
+      .select("id, full_name, age, gender, job_title, role_type, org_id, department_entity_id, team_entity_id, onboarding_complete, problem_solving_style, information_processing_style, meta_cognition_score, disc_interpretation")
       .eq("id", userId).maybeSingle();
     if (!profile) return null;
     const { data: sensitiveRows } = await (supabase.rpc as any)("get_my_sensitive_profile");
@@ -137,6 +147,11 @@ export const getMyProfile = createServerFn({ method: "GET" })
         team: teamEnt?.name ?? null,
         department_entity_id: profile.department_entity_id,
         team_entity_id: profile.team_entity_id,
+        onboarding_complete: !!profile.onboarding_complete,
+        problem_solving_style: profile.problem_solving_style ?? null,
+        information_processing_style: profile.information_processing_style ?? null,
+        meta_cognition_score: profile.meta_cognition_score ?? null,
+        disc_interpretation: profile.disc_interpretation ?? null,
       },
       educations: (edus ?? []) as any,
       languages: (pls ?? []).map((r: any) => r.languages?.name).filter(Boolean),
