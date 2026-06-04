@@ -266,10 +266,60 @@ function OnboardingPage() {
           )}
 
           {step === 2 && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Demographics</h2>
+              <p className="text-sm text-muted-foreground">All fields are optional. Used only for aggregated diversity metrics.</p>
+              <div className="space-y-2">
+                <Label>Nationality (you can add more than one)</Label>
+                <div className="flex flex-wrap gap-2">
+                  {nationalities.map((n) => (
+                    <span key={n} className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs">
+                      {n}
+                      <button type="button" onClick={() => setNationalities((a) => a.filter((x) => x !== n))} className="text-muted-foreground hover:text-destructive">×</button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={nationalityInput}
+                    onChange={(e) => setNationalityInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const v = nationalityInput.trim();
+                        if (v && !nationalities.includes(v) && nationalities.length < 5) {
+                          setNationalities((a) => [...a, v]);
+                          setNationalityInput("");
+                        }
+                      }
+                    }}
+                    placeholder="e.g. Greek, Italian"
+                  />
+                  <Button type="button" variant="outline" size="sm" onClick={() => {
+                    const v = nationalityInput.trim();
+                    if (v && !nationalities.includes(v) && nationalities.length < 5) {
+                      setNationalities((a) => [...a, v]);
+                      setNationalityInput("");
+                    }
+                  }}>Add</Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Neurodivergence (optional)</Label>
+                <Input value={neurodivergence} onChange={(e) => setNeurodivergence(e.target.value)} placeholder="e.g. ADHD, Autism, Dyslexia, prefer not to say" />
+              </div>
+              <div className="space-y-2">
+                <Label>Disability (optional)</Label>
+                <Input value={disability} onChange={(e) => setDisability(e.target.value)} placeholder="Specify or leave blank" />
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
             <div className="space-y-5">
               <div>
                 <h2 className="text-xl font-semibold">Educational background</h2>
-                <p className="text-sm text-muted-foreground">Add up to two degrees (typically Bachelor's and Master's).</p>
+                <p className="text-sm text-muted-foreground">Add up to three degrees (e.g. Bachelor's, Master's, PhD).</p>
               </div>
               {educations.map((edu, i) => (
                 <div key={i} className="rounded-lg border bg-background p-4 space-y-3">
@@ -323,25 +373,12 @@ function OnboardingPage() {
                   </div>
                 </div>
               ))}
-              {educations.length < 2 && (
+              {educations.length < 3 && (
                 <Button variant="outline" size="sm" onClick={() => setEducations((es) => [...es, emptyEdu()])}>+ Add another degree</Button>
               )}
             </div>
           )}
 
-          {step === 3 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Languages</h2>
-              <div className="flex flex-wrap gap-2">
-                {catalogs?.languages.map((l) => (
-                  <button key={l.id} type="button" onClick={() => setLanguageIds((a) => toggle(a, l.id))}
-                    className={`rounded-full border px-3 py-1 text-xs ${languageIds.includes(l.id) ? "bg-primary text-primary-foreground border-primary" : "bg-card"}`}>
-                    {l.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {step === 4 && (
             <div className="space-y-4">
