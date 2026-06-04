@@ -495,43 +495,89 @@ function OnboardingPage() {
             <div className="space-y-4">
               <div>
                 <h2 className="text-xl font-semibold">Core skills</h2>
-                <p className="text-sm text-muted-foreground">Pick a category to expand, then choose your skills inside.</p>
+                <p className="text-sm text-muted-foreground">
+                  Browse main areas, expand a subcategory, and tap individual skills. You can select across multiple areas.
+                </p>
               </div>
-              <div className="space-y-2">
-                {Object.entries(skillsByCat).sort(([a], [b]) => a.localeCompare(b)).map(([cat, items]) => {
-                  const open = openCategories.includes(cat);
-                  const selectedHere = items.filter((s) => skillIds.includes(s.id)).length;
+              <div className="space-y-3">
+                {MAIN_CATEGORY_ORDER.filter((m) => skillTree[m]).map((main) => {
+                  const subs = skillTree[main];
+                  const mainOpen = openMainCats.includes(main);
+                  const allItems = Object.values(subs).flat();
+                  const selectedInMain = allItems.filter((s) => skillIds.includes(s.id)).length;
                   return (
-                    <div key={cat} className="rounded-lg border bg-background">
+                    <div key={main} className="rounded-xl border bg-background">
                       <button
                         type="button"
-                        onClick={() => setOpenCategories((a) => toggle(a, cat))}
-                        className="flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium"
+                        onClick={() => setOpenMainCats((a) => toggle(a, main))}
+                        className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold"
                       >
                         <span className="flex items-center gap-2">
-                          <span>{open ? "▾" : "▸"}</span> {cat}
+                          <span className="text-muted-foreground">{mainOpen ? "▾" : "▸"}</span>
+                          {main}
                         </span>
-                        <span className="text-xs text-muted-foreground">{selectedHere > 0 ? `${selectedHere} selected` : `${items.length} skills`}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {selectedInMain > 0
+                            ? `${selectedInMain} selected · ${Object.keys(subs).length} subcategories`
+                            : `${Object.keys(subs).length} subcategories · ${allItems.length} skills`}
+                        </span>
                       </button>
-                      {open && (
-                        <div className="border-t px-4 py-3">
-                          <div className="flex flex-wrap gap-2">
-                            {items.map((s) => (
-                              <button key={s.id} type="button" onClick={() => setSkillIds((a) => toggle(a, s.id))}
-                                className={`rounded-full border px-3 py-1 text-xs ${skillIds.includes(s.id) ? "bg-primary text-primary-foreground border-primary" : "bg-card"}`}>
-                                {s.name}
-                              </button>
-                            ))}
-                          </div>
+                      {mainOpen && (
+                        <div className="border-t px-3 py-3 space-y-2">
+                          {Object.entries(subs).sort(([a], [b]) => a.localeCompare(b)).map(([sub, items]) => {
+                            const subKey = `${main}::${sub}`;
+                            const subOpen = openSubCats.includes(subKey);
+                            const selectedHere = items.filter((s) => skillIds.includes(s.id)).length;
+                            return (
+                              <div key={subKey} className="rounded-lg border bg-card">
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenSubCats((a) => toggle(a, subKey))}
+                                  className="flex w-full items-center justify-between px-3 py-2 text-sm font-medium"
+                                >
+                                  <span className="flex items-center gap-2">
+                                    <span className="text-muted-foreground">{subOpen ? "▾" : "▸"}</span>
+                                    {sub}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {selectedHere > 0 ? `${selectedHere} selected` : `${items.length} skills`}
+                                  </span>
+                                </button>
+                                {subOpen && (
+                                  <div className="border-t px-3 py-3">
+                                    <div className="flex flex-wrap gap-2">
+                                      {items.map((s) => (
+                                        <button
+                                          key={s.id}
+                                          type="button"
+                                          onClick={() => setSkillIds((a) => toggle(a, s.id))}
+                                          className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                                            skillIds.includes(s.id)
+                                              ? "bg-primary text-primary-foreground border-primary"
+                                              : "bg-background hover:bg-muted"
+                                          }`}
+                                        >
+                                          {s.name}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
                   );
                 })}
               </div>
-              <p className="text-xs text-muted-foreground">{skillIds.length} skill{skillIds.length === 1 ? "" : "s"} selected</p>
+              <p className="text-xs text-muted-foreground">
+                {skillIds.length} skill{skillIds.length === 1 ? "" : "s"} selected across all categories
+              </p>
             </div>
           )}
+
 
           {step === 6 && (
             <div className="space-y-6">
