@@ -113,7 +113,8 @@ function OnboardingPage() {
   const [department, setDepartment] = useState("");
   const [team, setTeam] = useState("");
   const [skillIds, setSkillIds] = useState<string[]>([]);
-  const [openCategories, setOpenCategories] = useState<string[]>([]);
+  const [openMainCats, setOpenMainCats] = useState<string[]>([]);
+  const [openSubCats, setOpenSubCats] = useState<string[]>([]);
 
   const [collab, setCollab] = useState(60);
   const [indep, setIndep] = useState(60);
