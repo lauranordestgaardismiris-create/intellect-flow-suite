@@ -22,7 +22,7 @@ export const Route = createFileRoute("/onboarding")({
 
 type Catalogs = { skills: { id: string; name: string; category: string | null }[]; languages: { id: string; name: string }[] };
 
-const STEPS = ["Workspace", "Personal", "Education", "Languages", "Professional", "Skills", "Work style", "DISC", "Cognitive", "Review"] as const;
+const STEPS = ["Workspace", "Personal", "Demographics", "Education", "Professional", "Skills", "Work style", "DISC", "Cognitive", "Review"] as const;
 
 // ---- option lists ----
 const GENDER_OPTIONS = ["Female", "Male", "Other"] as const;
@@ -98,14 +98,20 @@ function OnboardingPage() {
   const [religion, setReligion] = useState("");
   const [religionOther, setReligionOther] = useState("");
   const [orientation, setOrientation] = useState("");
+  const [nationalities, setNationalities] = useState<string[]>([]);
+  const [nationalityInput, setNationalityInput] = useState("");
+  const [neurodivergence, setNeurodivergence] = useState("");
+  const [disability, setDisability] = useState("");
   const [educations, setEducations] = useState<Education[]>([emptyEdu()]);
-  const [languageIds, setLanguageIds] = useState<string[]>([]);
   const [jobTitle, setJobTitle] = useState("");
-  const [roleType, setRoleType] = useState<"individual_contributor" | "manager" | "executive">("individual_contributor");
+  const [roleType, setRoleType] = useState<"individual_contributor" | "manager" | "executive" | "intern">("individual_contributor");
+  const [yearsTotal, setYearsTotal] = useState<string>("");
+  const [yearsInRole, setYearsInRole] = useState<string>("");
   const [department, setDepartment] = useState("");
   const [team, setTeam] = useState("");
   const [skillIds, setSkillIds] = useState<string[]>([]);
   const [openCategories, setOpenCategories] = useState<string[]>([]);
+
   const [collab, setCollab] = useState(60);
   const [indep, setIndep] = useState(60);
   const [repet, setRepet] = useState(40);
@@ -157,15 +163,21 @@ function OnboardingPage() {
         mode, org_name: mode === "create" ? orgName : undefined, invite_token: mode === "invite" ? invite : undefined,
         full_name: fullName, age: age ? parseInt(age) : null, gender: gender || null,
         religion: resolvedReligion, sexual_orientation: orientation || null,
+        nationalities,
+        neurodivergence: neurodivergence.trim() || null,
+        disability: disability.trim() || null,
         educations: cleanEdus,
-        language_ids: languageIds,
+        language_ids: [],
         job_title: jobTitle || null, role_type: roleType,
+        years_experience_total: yearsTotal ? parseInt(yearsTotal) : null,
+        years_in_role: yearsInRole ? parseInt(yearsInRole) : null,
         department_name: department || null, team_name: team || null,
         skill_ids: skillIds,
         collaboration: collab, independent_work: indep, task_repetition: repet, idea_generation: idea,
         disc: { d: disc.d, i: disc.i, s: disc.s, c: disc.c, dominant: disc.dominant },
         cognitive: { analytical: cog.analytical, practical: cog.practical, relational: cog.relational, experimental: cog.experimental, dominant: cog.dominant },
       } } as any);
+
       await recompute().catch(() => {});
       toast.success("Profile complete!");
       router.invalidate();
