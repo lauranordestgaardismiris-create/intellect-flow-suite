@@ -143,12 +143,15 @@ function OnboardingPage() {
   // We map those into higher-level main categories for navigation. Subcategory (DB column)
   // is used when present; otherwise the existing category acts as the subcategory label.
   const MAIN_CATEGORY_MAP: Record<string, string> = {
+    ai: "AI",
+    "machine learning": "AI",
     programming: "Technical",
     "data & analytics": "Technical",
     analytics: "Technical",
     engineering: "Technical",
     cybersecurity: "Technical",
-    design: "Creative",
+    design: "Creative / Design",
+    creative: "Creative / Design",
     finance: "Business",
     marketing: "Business",
     sales: "Business",
@@ -158,20 +161,18 @@ function OnboardingPage() {
     communication: "People & Leadership",
     hr: "People & Leadership",
     soft: "People & Leadership",
-    languages: "Languages",
     legal: "Business",
   };
-  const MAIN_CATEGORY_ORDER = ["Technical", "Business", "Creative", "People & Leadership", "Languages", "Other"];
+  const MAIN_CATEGORY_ORDER = ["AI", "Technical", "Creative / Design", "Business", "People & Leadership", "Other"];
 
   type SkillItem = { id: string; name: string };
   const skillTree = useMemo(() => {
-    // main -> sub -> SkillItem[]
     const tree: Record<string, Record<string, SkillItem[]>> = {};
     for (const s of catalogs?.skills ?? []) {
       const rawCat = (s.category || "Other").trim();
+      if (rawCat.toLowerCase() === "languages") continue;
       const main = MAIN_CATEGORY_MAP[rawCat.toLowerCase()] || "Other";
       const sub = (s as any).subcategory || rawCat;
-      // Normalize sub label to Title Case dedupe (e.g., "programming" + "Programming")
       const subKey = sub.charAt(0).toUpperCase() + sub.slice(1);
       tree[main] = tree[main] || {};
       tree[main][subKey] = tree[main][subKey] || [];
@@ -179,6 +180,13 @@ function OnboardingPage() {
     }
     return tree;
   }, [catalogs]);
+
+  const filteredLanguages = useMemo(() => {
+    const all = catalogs?.languages ?? [];
+    const q = langSearch.trim().toLowerCase();
+    const list = q ? all.filter((l) => l.name.toLowerCase().includes(q)) : all;
+    return [...list].sort((a, b) => a.name.localeCompare(b.name));
+  }, [catalogs, langSearch]);
 
   function toggle<T>(arr: T[], v: T): T[] {
     return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
