@@ -503,21 +503,70 @@ function OnboardingPage() {
           {step === 6 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold">Work style</h2>
+                <h2 className="text-xl font-semibold">Work & thinking style</h2>
                 <p className="text-sm text-muted-foreground">Each slider is independent — they do not need to sum to 100.</p>
               </div>
-              {([
-                ["Collaboration / teamwork", "How much of your work is done with others.", collab, setCollab],
-                ["Independent work", "How much of your work you do alone.", indep, setIndep],
-                ["Repetitive tasks", "How much of your work is routine and repeated.", repet, setRepet],
-                ["Idea generation / innovation", "How much of your work involves creating new ideas.", idea, setIdea],
-              ] as const).map(([label, tip, val, set]) => (
-                <div key={label} className="space-y-2">
-                  <div className="flex justify-between text-sm"><Label>{label}</Label><span className="text-muted-foreground tabular-nums">{val}</span></div>
-                  <Slider value={[val as number]} onValueChange={(v) => (set as any)(v[0])} max={100} step={1} />
-                  <p className="text-xs text-muted-foreground">{tip}</p>
-                </div>
-              ))}
+
+              <section className="space-y-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Work style</p>
+                {([
+                  ["Collaboration / teamwork", "How much of your work is done with others.", collab, setCollab],
+                  ["Independent work", "How much of your work you do alone.", indep, setIndep],
+                  ["Repetitive tasks", "How much of your work is routine and repeated.", repet, setRepet],
+                  ["Idea generation / innovation", "How much of your work involves creating new ideas.", idea, setIdea],
+                ] as const).map(([label, tip, val, set]) => (
+                  <div key={label} className="space-y-2">
+                    <div className="flex justify-between text-sm"><Label>{label}</Label><span className="text-muted-foreground tabular-nums">{val}</span></div>
+                    <Slider value={[val as number]} onValueChange={(v) => (set as any)(v[0])} max={100} step={1} />
+                    <p className="text-xs text-muted-foreground">{tip}</p>
+                  </div>
+                ))}
+              </section>
+
+              <section className="space-y-4 border-t pt-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Problem-solving style</p>
+                {([
+                  ["Structured problem solving", "I follow a clear, methodical process.", psStructured, setPsStructured],
+                  ["Exploratory problem solving", "I experiment, prototype and discover as I go.", psExploratory, setPsExploratory],
+                ] as const).map(([label, tip, val, set]) => (
+                  <div key={label} className="space-y-2">
+                    <div className="flex justify-between text-sm"><Label>{label}</Label><span className="text-muted-foreground tabular-nums">{val}</span></div>
+                    <Slider value={[val as number]} onValueChange={(v) => (set as any)(v[0])} max={100} step={1} />
+                    <p className="text-xs text-muted-foreground">{tip}</p>
+                  </div>
+                ))}
+              </section>
+
+              <section className="space-y-4 border-t pt-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Information processing</p>
+                {([
+                  ["Depth-oriented", "I prefer going deep on one topic at a time.", ipDepth, setIpDepth],
+                  ["Breadth-oriented", "I prefer scanning broadly across many topics.", ipBreadth, setIpBreadth],
+                  ["Structured information", "I work best with organised, formatted info.", ipStructured, setIpStructured],
+                  ["Unstructured information", "I'm comfortable with raw, messy info.", ipUnstructured, setIpUnstructured],
+                ] as const).map(([label, tip, val, set]) => (
+                  <div key={label} className="space-y-2">
+                    <div className="flex justify-between text-sm"><Label>{label}</Label><span className="text-muted-foreground tabular-nums">{val}</span></div>
+                    <Slider value={[val as number]} onValueChange={(v) => (set as any)(v[0])} max={100} step={1} />
+                    <p className="text-xs text-muted-foreground">{tip}</p>
+                  </div>
+                ))}
+              </section>
+
+              <section className="space-y-4 border-t pt-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Meta-cognition (self-assessment)</p>
+                {([
+                  ["I reflect before making decisions.", "How often you pause to think things through.", mcReflect, setMcReflect],
+                  ["I adjust my thinking when I'm shown I'm wrong.", "How easily you update your views.", mcAdjust, setMcAdjust],
+                  ["I'm aware of my personal biases.", "How honestly you notice your own biases.", mcBias, setMcBias],
+                ] as const).map(([label, tip, val, set]) => (
+                  <div key={label} className="space-y-2">
+                    <div className="flex justify-between text-sm"><Label>{label}</Label><span className="text-muted-foreground tabular-nums">{val}</span></div>
+                    <Slider value={[val as number]} onValueChange={(v) => (set as any)(v[0])} max={100} step={1} />
+                    <p className="text-xs text-muted-foreground">{tip}</p>
+                  </div>
+                ))}
+              </section>
             </div>
           )}
 
