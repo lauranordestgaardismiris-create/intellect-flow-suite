@@ -189,6 +189,21 @@ function OnboardingPage() {
         department_name: department || null, team_name: team || null,
         skill_ids: skillIds,
         collaboration: collab, independent_work: indep, task_repetition: repet, idea_generation: idea,
+        problem_solving_style: {
+          structured_problem_solving: psStructured,
+          exploratory_problem_solving: psExploratory,
+        },
+        information_processing_style: {
+          depth_oriented_processing: ipDepth,
+          breadth_oriented_processing: ipBreadth,
+          structured_information_preference: ipStructured,
+          unstructured_information_preference: ipUnstructured,
+        },
+        meta_cognition: {
+          reflects_before_decision: mcReflect,
+          adjusts_thinking_when_wrong: mcAdjust,
+          aware_of_personal_biases: mcBias,
+        },
         disc: { d: disc.d, i: disc.i, s: disc.s, c: disc.c, dominant: disc.dominant },
         cognitive: { analytical: cog.analytical, practical: cog.practical, relational: cog.relational, experimental: cog.experimental, dominant: cog.dominant },
       } } as any);
