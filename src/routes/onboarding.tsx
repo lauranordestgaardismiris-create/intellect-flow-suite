@@ -134,6 +134,8 @@ function OnboardingPage() {
   const [team, setTeam] = useState("");
   const [skillIds, setSkillIds] = useState<string[]>([]);
   const [langIds, setLangIds] = useState<string[]>([]);
+  const [suggestedLangIds, setSuggestedLangIds] = useState<string[]>([]);
+  const [dismissedLangSuggestions, setDismissedLangSuggestions] = useState<string[]>([]);
   const [langSearch, setLangSearch] = useState("");
   const [openMainCats, setOpenMainCats] = useState<string[]>([]);
   const [openSubCats, setOpenSubCats] = useState<string[]>([]);
