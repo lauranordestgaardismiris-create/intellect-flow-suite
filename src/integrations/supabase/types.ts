@@ -458,6 +458,8 @@ export type Database = {
           gender: string | null
           id: string
           information_processing_style: Json | null
+          insights_summary_long: string | null
+          insights_summary_short: string | null
           job_title: string | null
           meta_cognition_score: number | null
           nationalities: string[]
@@ -486,6 +488,8 @@ export type Database = {
           gender?: string | null
           id: string
           information_processing_style?: Json | null
+          insights_summary_long?: string | null
+          insights_summary_short?: string | null
           job_title?: string | null
           meta_cognition_score?: number | null
           nationalities?: string[]
@@ -514,6 +518,8 @@ export type Database = {
           gender?: string | null
           id?: string
           information_processing_style?: Json | null
+          insights_summary_long?: string | null
+          insights_summary_short?: string | null
           job_title?: string | null
           meta_cognition_score?: number | null
           nationalities?: string[]
