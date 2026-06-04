@@ -419,10 +419,16 @@ function OnboardingPage() {
                 <Select value={roleType} onValueChange={(v) => setRoleType(v as any)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="individual_contributor">Individual contributor</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
                     <SelectItem value="executive">Executive</SelectItem>
+                    <SelectItem value="senior_management">Senior Management</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="team_lead">Team Lead</SelectItem>
+                    <SelectItem value="individual_contributor">Individual Contributor</SelectItem>
+                    <SelectItem value="specialist">Specialist</SelectItem>
                     <SelectItem value="intern">Intern</SelectItem>
+                    <SelectItem value="consultant">Consultant</SelectItem>
+                    <SelectItem value="freelancer">Freelancer</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
