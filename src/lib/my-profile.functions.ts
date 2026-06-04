@@ -138,6 +138,33 @@ export const getMyProfile = createServerFn({ method: "GET" })
       }
     }
 
+    // Generate & cache AI insights if missing and onboarding complete
+    let insightsShort: string | null = profile.insights_summary_short ?? null;
+    let insightsLong: string | null = profile.insights_summary_long ?? null;
+    if (profile.onboarding_complete && (!insightsShort || !insightsLong)) {
+      try {
+        const aiOut = await generateProfileInsights({
+          full_name: profile.full_name,
+          disc,
+          cognitive: cog,
+          work_style: ws,
+          problem_solving_style: profile.problem_solving_style ?? null,
+          information_processing_style: profile.information_processing_style ?? null,
+          meta_cognition_score: profile.meta_cognition_score ?? null,
+        });
+        if (aiOut) {
+          insightsShort = aiOut.summary;
+          insightsLong = aiOut.detail;
+          await supabase
+            .from("profiles")
+            .update({ insights_summary_short: insightsShort, insights_summary_long: insightsLong })
+            .eq("id", userId);
+        }
+      } catch (e) {
+        console.error("Failed to generate profile insights:", e);
+      }
+    }
+
     return {
       profile: {
         id: profile.id, full_name: profile.full_name, email,
@@ -154,6 +181,8 @@ export const getMyProfile = createServerFn({ method: "GET" })
         information_processing_style: profile.information_processing_style ?? null,
         meta_cognition_score: profile.meta_cognition_score ?? null,
         disc_interpretation: profile.disc_interpretation ?? null,
+        insights_summary_short: insightsShort,
+        insights_summary_long: insightsLong,
       },
       educations: (edus ?? []) as any,
       languages: (pls ?? []).map((r: any) => r.languages?.name).filter(Boolean),
@@ -162,3 +191,48 @@ export const getMyProfile = createServerFn({ method: "GET" })
       team: { name: groupName, scope, member_count: peerIds.length, disc_avg: discAvg, cognitive_avg: cogAvg },
     };
   });
+
+async function generateProfileInsights(input: {
+  full_name: string;
+  disc: any;
+  cognitive: any;
+  work_style: any;
+  problem_solving_style: any;
+  information_processing_style: any;
+  meta_cognition_score: number | null;
+}): Promise<{ summary: string; detail: string } | null> {
+  const apiKey = process.env.LOVABLE_API_KEY;
+  if (!apiKey) return null;
+
+  const sys = `You are a thoughtful organisational psychologist writing a personalised intelligence profile for one person. You will receive their assessment scores. Return STRICT JSON only, no markdown, no commentary, in the shape: {"summary": string, "detail": string}.
+- "summary": ONE coherent paragraph (4-6 sentences) that weaves DISC, cognitive style, work style, problem-solving, information processing and meta-cognition into a natural narrative of who they are and how they work. Do not list numbers. Do not use bullet points. Write in the second person ("you").
+- "detail": 3-4 short paragraphs going deeper. Cover (1) how their DISC profile interacts with their cognitive style, (2) what their work style scores suggest about their ideal working environment, (3) what their problem-solving and information-processing preferences reveal about how they handle complexity, and (4) what their meta-cognition score says about self-awareness and growth. Write in the second person, warm and specific. Separate paragraphs with \\n\\n. No headings, no bullets.`;
+
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-3-flash-preview",
+      messages: [
+        { role: "system", content: sys },
+        { role: "user", content: `Assessment data:\n${JSON.stringify(input, null, 2)}` },
+      ],
+      response_format: { type: "json_object" },
+    }),
+  });
+  if (!res.ok) {
+    console.error("AI insights gateway error", res.status, await res.text().catch(() => ""));
+    return null;
+  }
+  const json = await res.json();
+  const content = json.choices?.[0]?.message?.content ?? "";
+  try {
+    const parsed = JSON.parse(content);
+    if (typeof parsed.summary === "string" && typeof parsed.detail === "string") {
+      return { summary: parsed.summary, detail: parsed.detail };
+    }
+  } catch (e) {
+    console.error("Failed to parse AI insights JSON:", content);
+  }
+  return null;
+}
