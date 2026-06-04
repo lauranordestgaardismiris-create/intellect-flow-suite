@@ -136,14 +136,46 @@ function OnboardingPage() {
   const [cogA, setCogA] = useState<(CognitiveDim | null)[]>(Array(COGNITIVE_QUESTIONS.length).fill(null));
   const [busy, setBusy] = useState(false);
 
-  // group skills by category
-  const skillsByCat = useMemo(() => {
-    const map: Record<string, { id: string; name: string }[]> = {};
+  // Hierarchical skill grouping: Main Category -> Subcategory -> Skills
+  // The DB `skills.category` field holds the existing flat category (e.g. "Programming").
+  // We map those into higher-level main categories for navigation. Subcategory (DB column)
+  // is used when present; otherwise the existing category acts as the subcategory label.
+  const MAIN_CATEGORY_MAP: Record<string, string> = {
+    programming: "Technical",
+    "data & analytics": "Technical",
+    analytics: "Technical",
+    engineering: "Technical",
+    cybersecurity: "Technical",
+    design: "Creative",
+    finance: "Business",
+    marketing: "Business",
+    sales: "Business",
+    operations: "Business",
+    "project management": "Business",
+    leadership: "People & Leadership",
+    communication: "People & Leadership",
+    hr: "People & Leadership",
+    soft: "People & Leadership",
+    languages: "Languages",
+    legal: "Business",
+  };
+  const MAIN_CATEGORY_ORDER = ["Technical", "Business", "Creative", "People & Leadership", "Languages", "Other"];
+
+  type SkillItem = { id: string; name: string };
+  const skillTree = useMemo(() => {
+    // main -> sub -> SkillItem[]
+    const tree: Record<string, Record<string, SkillItem[]>> = {};
     for (const s of catalogs?.skills ?? []) {
-      const cat = s.category || "Other";
-      (map[cat] = map[cat] || []).push({ id: s.id, name: s.name });
+      const rawCat = (s.category || "Other").trim();
+      const main = MAIN_CATEGORY_MAP[rawCat.toLowerCase()] || "Other";
+      const sub = (s as any).subcategory || rawCat;
+      // Normalize sub label to Title Case dedupe (e.g., "programming" + "Programming")
+      const subKey = sub.charAt(0).toUpperCase() + sub.slice(1);
+      tree[main] = tree[main] || {};
+      tree[main][subKey] = tree[main][subKey] || [];
+      tree[main][subKey].push({ id: s.id, name: s.name });
     }
-    return map;
+    return tree;
   }, [catalogs]);
 
   function toggle<T>(arr: T[], v: T): T[] {
