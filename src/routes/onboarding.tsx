@@ -210,6 +210,34 @@ function OnboardingPage() {
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
   }, [catalogs, langSearch]);
 
+  // Auto-suggest languages from nationality. Suggested chips are visually distinct
+  // and removable; dismissed names won't be re-added even if nationality changes.
+  useEffect(() => {
+    const langs = catalogs?.languages;
+    if (!langs?.length) return;
+    const targetNames = new Set<string>();
+    for (const nat of nationalities) {
+      const mapped = NATIONALITY_LANGUAGE_MAP[nat.trim().toLowerCase()];
+      if (mapped) targetNames.add(mapped.toLowerCase());
+    }
+    // Resolve target language IDs from catalog
+    const targetIds = langs
+      .filter((l) => targetNames.has(l.name.toLowerCase()) && !dismissedLangSuggestions.includes(l.id))
+      .map((l) => l.id);
+
+    setSuggestedLangIds((prev) => {
+      // Keep only suggestions still backed by a current nationality
+      const keep = prev.filter((id) => targetIds.includes(id));
+      const toAdd = targetIds.filter((id) => !keep.includes(id));
+      return [...keep, ...toAdd];
+    });
+    setLangIds((prev) => {
+      const next = new Set(prev);
+      for (const id of targetIds) next.add(id);
+      return Array.from(next);
+    });
+  }, [nationalities, catalogs, dismissedLangSuggestions]);
+
   function toggle<T>(arr: T[], v: T): T[] {
     return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
   }
