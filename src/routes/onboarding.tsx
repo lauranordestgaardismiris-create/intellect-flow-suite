@@ -20,7 +20,7 @@ export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
 });
 
-type Catalogs = { skills: { id: string; name: string; category: string | null }[]; languages: { id: string; name: string }[] };
+type Catalogs = { skills: { id: string; name: string; category: string | null; subcategory: string | null }[]; languages: { id: string; name: string }[] };
 
 const STEPS = ["Workspace", "Personal", "Demographics", "Education", "Professional", "Skills", "Work style", "DISC", "Cognitive", "Review"] as const;
 
