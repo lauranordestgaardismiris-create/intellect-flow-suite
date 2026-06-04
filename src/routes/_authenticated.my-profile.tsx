@@ -5,45 +5,68 @@ import { useMemo } from "react";
 import { getMyProfile } from "@/lib/my-profile.functions";
 import { DiscBar } from "@/components/disc-bar";
 import { Button } from "@/components/ui/button";
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend,
+} from "recharts";
 
 export const Route = createFileRoute("/_authenticated/my-profile")({
   head: () => ({ meta: [{ title: "My profile — Collective Intelligence" }] }),
   component: MyProfilePage,
 });
 
+// Stored cognitive dim → display label
 const COG_META: Record<string, { name: string; color: string }> = {
-  analytical:   { name: "Analytical",   color: "#3b82f6" },
-  practical:    { name: "Practical",    color: "#22c55e" },
-  relational:   { name: "Relational",   color: "#f59e0b" },
-  experimental: { name: "Experimental", color: "#a855f7" },
+  analytical:   { name: "Analytical", color: "#3b82f6" },
+  practical:    { name: "Practical",  color: "#22c55e" },
+  relational:   { name: "Strategic",  color: "#f59e0b" },
+  experimental: { name: "Creative",   color: "#a855f7" },
 };
 
-function CognitiveQuadrants({ a, p, r, e, title }: { a: number; p: number; r: number; e: number; title?: string }) {
-  const items: [string, number][] = [
-    ["analytical", a], ["practical", p], ["relational", r], ["experimental", e],
+function CognitiveRadar({ a, p, r, e, peerA, peerP, peerR, peerE, title }: {
+  a: number; p: number; r: number; e: number;
+  peerA?: number; peerP?: number; peerR?: number; peerE?: number;
+  title?: string;
+}) {
+  const data = [
+    { axis: "Analytical", you: a, team: peerA ?? 0 },
+    { axis: "Creative",   you: e, team: peerE ?? 0 },
+    { axis: "Strategic",  you: r, team: peerR ?? 0 },
+    { axis: "Practical",  you: p, team: peerP ?? 0 },
   ];
+  const showTeam = peerA !== undefined;
   return (
     <div className="space-y-2">
       {title && <p className="text-sm font-medium">{title}</p>}
-      <div className="grid grid-cols-2 gap-2">
-        {items.map(([k, v]) => {
-          const m = COG_META[k];
-          return (
-            <div key={k} className="rounded-md border bg-card p-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium">{m.name}</span>
-                <span className="tabular-nums">{v}%</span>
-              </div>
-              <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
-                <div className="h-full rounded-full" style={{ width: `${v}%`, backgroundColor: m.color }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <ResponsiveContainer width="100%" height={280}>
+        <RadarChart data={data} outerRadius="75%">
+          <PolarGrid stroke="var(--border)" />
+          <PolarAngleAxis dataKey="axis" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
+          <PolarRadiusAxis tick={{ fill: "var(--muted-foreground)", fontSize: 10 }} domain={[0, 100]} />
+          <Radar name="You" dataKey="you" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.35} />
+          {showTeam && <Radar name="Team avg" dataKey="team" stroke="#a855f7" fill="#a855f7" fillOpacity={0.2} />}
+          {showTeam && <Legend />}
+        </RadarChart>
+      </ResponsiveContainer>
     </div>
   );
 }
+
+function Bars({ items }: { items: Array<[string, number, string?]> }) {
+  return (
+    <div className="grid sm:grid-cols-2 gap-3 text-sm">
+      {items.map(([label, v, tip]) => (
+        <div key={label} className="rounded-md border p-3">
+          <div className="flex justify-between"><span>{label}</span><span className="tabular-nums">{v}</span></div>
+          <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-primary rounded-full" style={{ width: `${v}%` }} />
+          </div>
+          {tip && <p className="mt-1.5 text-xs text-muted-foreground">{tip}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 
 function MyProfilePage() {
   const navigate = useNavigate();
