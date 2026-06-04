@@ -121,6 +121,16 @@ export const submitOnboarding = createServerFn({ method: "POST" })
     const educationLevel = firstEdu?.degree_level ?? null;
     const fieldOfStudy = firstEdu?.field_of_study ?? null;
 
+    // Aggregate meta-cognition (mean of three self-assessment items)
+    const mc = data.meta_cognition;
+    const metaCognitionScore = mc
+      ? Math.round((mc.reflects_before_decision + mc.adjusts_thinking_when_wrong + mc.aware_of_personal_biases) / 3)
+      : null;
+
+    // Build DISC interpretation server-side from final scores
+    const { discInterpretation } = await import("@/lib/assessments");
+    const discText = discInterpretation(data.disc.d, data.disc.i, data.disc.s, data.disc.c);
+
     // Upsert profile
     const profileRow = {
       id: userId, org_id: orgId, email,
@@ -134,6 +144,10 @@ export const submitOnboarding = createServerFn({ method: "POST" })
       years_experience_total: data.years_experience_total ?? null,
       years_in_role: data.years_in_role ?? null,
       department_entity_id: deptId, team_entity_id: teamId,
+      problem_solving_style: data.problem_solving_style ?? null,
+      information_processing_style: data.information_processing_style ?? null,
+      meta_cognition_score: metaCognitionScore,
+      disc_interpretation: discText,
       onboarding_complete: true, updated_at: new Date().toISOString(),
     };
     const { error: pe } = await supabase.from("profiles").upsert(profileRow, { onConflict: "id" });
