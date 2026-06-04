@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   ResponsiveContainer, Legend, Tooltip,
@@ -182,19 +182,50 @@ export function PersonalIntelligenceProfile({ data }: Props) {
     return { align, diverge };
   }, [showTeam, disc, cog, data.team]);
 
+  const [detailOpen, setDetailOpen] = useState(false);
+  const aiShort = p.insights_summary_short;
+  const aiLong = p.insights_summary_long;
+  const displaySummary = aiShort || summary;
+
   return (
     <section className="rounded-xl border bg-card p-6 space-y-6">
       <header className="space-y-1">
-        <h2 className="text-xl font-semibold">Personal Intelligence Profile</h2>
+        <h2 className="text-xl font-semibold">Your Intelligence Insights</h2>
         <p className="text-sm text-muted-foreground">
           A unified view of how you think, work, and contribute — combining all your assessments.
         </p>
       </header>
 
       {/* Profile Summary */}
-      {summary && (
-        <div className="rounded-lg border bg-accent/30 p-4">
-          <p className="text-sm leading-relaxed text-foreground/90">{summary}</p>
+      {displaySummary && (
+        <div className="rounded-lg border bg-accent/30 p-4 space-y-3">
+          <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">{displaySummary}</p>
+
+          {aiLong && (
+            <div>
+              <button
+                type="button"
+                onClick={() => setDetailOpen((o) => !o)}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                aria-expanded={detailOpen}
+              >
+                <span>Curious to know more?</span>
+                <span
+                  className={`inline-block transition-transform duration-200 ${detailOpen ? "rotate-90" : ""}`}
+                  aria-hidden
+                >
+                  ›
+                </span>
+              </button>
+              {detailOpen && (
+                <div className="mt-3 space-y-3 border-t pt-3">
+                  {aiLong.split(/\n\n+/).map((para, i) => (
+                    <p key={i} className="text-sm leading-relaxed text-foreground/90">{para}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
