@@ -17,6 +17,16 @@ export type MyProfilePayload = {
     team: string | null;
     department_entity_id: string | null;
     team_entity_id: string | null;
+    onboarding_complete: boolean;
+    problem_solving_style: { structured_problem_solving: number; exploratory_problem_solving: number } | null;
+    information_processing_style: {
+      depth_oriented_processing: number;
+      breadth_oriented_processing: number;
+      structured_information_preference: number;
+      unstructured_information_preference: number;
+    } | null;
+    meta_cognition_score: number | null;
+    disc_interpretation: string | null;
   };
   educations: Array<{
     id: string; position: number; degree_level: string | null; degree_type: string | null;
