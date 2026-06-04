@@ -204,9 +204,9 @@ async function generateProfileInsights(input: {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) return null;
 
-  const sys = `You are a thoughtful organisational psychologist writing a personalised intelligence profile for one person. You will receive their assessment scores. Return STRICT JSON only, no markdown, no commentary, in the shape: {"summary": string, "detail": string}.
-- "summary": ONE coherent paragraph (4-6 sentences) that weaves DISC, cognitive style, work style, problem-solving, information processing and meta-cognition into a natural narrative of who they are and how they work. Do not list numbers. Do not use bullet points. Write in the second person ("you").
-- "detail": 3-4 short paragraphs going deeper. Cover (1) how their DISC profile interacts with their cognitive style, (2) what their work style scores suggest about their ideal working environment, (3) what their problem-solving and information-processing preferences reveal about how they handle complexity, and (4) what their meta-cognition score says about self-awareness and growth. Write in the second person, warm and specific. Separate paragraphs with \\n\\n. No headings, no bullets.`;
+  const sys = `You are writing a personalised intelligence profile for a professional. Return STRICT JSON only, no markdown, no commentary, in the shape: {"summary": string, "detail": string}.
+- "summary": 2-3 natural sentences, max 60 words. Describe this person's overall cognitive and working style by weaving all dimensions together into one coherent paragraph. Do not list scores. Do not mention percentages. Do not use first person.
+- "detail": 4 short paragraphs, max 200 words total, separated by \\n\\n. Cover in order: (1) how their DISC profile and cognitive style interact, (2) what their work style scores suggest about their ideal environment, (3) what their problem-solving and information-processing styles reveal about how they handle complexity, (4) one actionable insight about where they likely add the most value in a team. Warm, specific, second person. No headings, no bullets.`;
 
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
