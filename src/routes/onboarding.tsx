@@ -582,8 +582,68 @@ function OnboardingPage() {
                   );
                 })}
               </div>
+
+              {/* Languages — dedicated main category with global searchable list */}
+              <div className="rounded-xl border bg-background">
+                <button
+                  type="button"
+                  onClick={() => setOpenMainCats((a) => toggle(a, "Languages"))}
+                  className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-muted-foreground">{openMainCats.includes("Languages") ? "▾" : "▸"}</span>
+                    Languages
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {langIds.length > 0
+                      ? `${langIds.length} selected · ${catalogs?.languages?.length ?? 0} available`
+                      : `Search ${catalogs?.languages?.length ?? 0} languages`}
+                  </span>
+                </button>
+                {openMainCats.includes("Languages") && (
+                  <div className="border-t px-3 py-3 space-y-3">
+                    <Input
+                      value={langSearch}
+                      onChange={(e) => setLangSearch(e.target.value)}
+                      placeholder="Search languages…"
+                    />
+                    {langIds.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {(catalogs?.languages ?? [])
+                          .filter((l) => langIds.includes(l.id))
+                          .map((l) => (
+                            <span key={l.id} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs">
+                              {l.name}
+                              <button type="button" onClick={() => setLangIds((a) => a.filter((x) => x !== l.id))} className="text-muted-foreground hover:text-destructive">×</button>
+                            </span>
+                          ))}
+                      </div>
+                    )}
+                    <div className="max-h-64 overflow-y-auto flex flex-wrap gap-2 pr-1">
+                      {filteredLanguages.slice(0, 80).map((l) => (
+                        <button
+                          key={l.id}
+                          type="button"
+                          onClick={() => setLangIds((a) => toggle(a, l.id))}
+                          className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                            langIds.includes(l.id)
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-card hover:bg-muted"
+                          }`}
+                        >
+                          {l.name}
+                        </button>
+                      ))}
+                      {filteredLanguages.length === 0 && (
+                        <p className="text-xs text-muted-foreground py-2">No languages match "{langSearch}".</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <p className="text-xs text-muted-foreground">
-                {skillIds.length} skill{skillIds.length === 1 ? "" : "s"} selected across all categories
+                {skillIds.length} skill{skillIds.length === 1 ? "" : "s"} · {langIds.length} language{langIds.length === 1 ? "" : "s"} selected
               </p>
             </div>
           )}
