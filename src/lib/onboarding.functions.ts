@@ -204,7 +204,7 @@ export const getOnboardingCatalogs = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase } = context as any;
     const [{ data: skills }, { data: languages }] = await Promise.all([
-      supabase.from("skills").select("id, name, category").order("category").order("name"),
+      supabase.from("skills").select("id, name, category, subcategory").order("category").order("name"),
       supabase.from("languages").select("id, name").order("name"),
     ]);
     return { skills: skills ?? [], languages: languages ?? [] };
