@@ -449,6 +449,7 @@ export type Database = {
           age: number | null
           created_at: string
           department_entity_id: string | null
+          disability: string | null
           education_level: string | null
           email: string | null
           field_of_study: string | null
@@ -456,6 +457,8 @@ export type Database = {
           gender: string | null
           id: string
           job_title: string | null
+          nationalities: string[]
+          neurodivergence: string | null
           onboarding_complete: boolean
           org_id: string
           religion: string | null
@@ -463,11 +466,14 @@ export type Database = {
           sexual_orientation: string | null
           team_entity_id: string | null
           updated_at: string
+          years_experience_total: number | null
+          years_in_role: number | null
         }
         Insert: {
           age?: number | null
           created_at?: string
           department_entity_id?: string | null
+          disability?: string | null
           education_level?: string | null
           email?: string | null
           field_of_study?: string | null
@@ -475,6 +481,8 @@ export type Database = {
           gender?: string | null
           id: string
           job_title?: string | null
+          nationalities?: string[]
+          neurodivergence?: string | null
           onboarding_complete?: boolean
           org_id: string
           religion?: string | null
@@ -482,11 +490,14 @@ export type Database = {
           sexual_orientation?: string | null
           team_entity_id?: string | null
           updated_at?: string
+          years_experience_total?: number | null
+          years_in_role?: number | null
         }
         Update: {
           age?: number | null
           created_at?: string
           department_entity_id?: string | null
+          disability?: string | null
           education_level?: string | null
           email?: string | null
           field_of_study?: string | null
@@ -494,6 +505,8 @@ export type Database = {
           gender?: string | null
           id?: string
           job_title?: string | null
+          nationalities?: string[]
+          neurodivergence?: string | null
           onboarding_complete?: boolean
           org_id?: string
           religion?: string | null
@@ -501,6 +514,8 @@ export type Database = {
           sexual_orientation?: string | null
           team_entity_id?: string | null
           updated_at?: string
+          years_experience_total?: number | null
+          years_in_role?: number | null
         }
         Relationships: [
           {
@@ -646,7 +661,7 @@ export type Database = {
         | "experimental"
       disc_type: "D" | "I" | "S" | "C"
       entity_type: "company" | "department" | "team"
-      role_type: "individual_contributor" | "manager" | "executive"
+      role_type: "individual_contributor" | "manager" | "executive" | "intern"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -783,7 +798,7 @@ export const Constants = {
       ],
       disc_type: ["D", "I", "S", "C"],
       entity_type: ["company", "department", "team"],
-      role_type: ["individual_contributor", "manager", "executive"],
+      role_type: ["individual_contributor", "manager", "executive", "intern"],
     },
   },
 } as const

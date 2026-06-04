@@ -22,13 +22,20 @@ const OnboardingSchema = z.object({
   gender: z.string().max(60).optional().nullable(),
   religion: z.string().max(60).optional().nullable(),
   sexual_orientation: z.string().max(60).optional().nullable(),
-  educations: z.array(EducationSchema).max(2).default([]),
-  language_ids: z.array(z.string().uuid()).max(20),
+  // demographic (optional)
+  nationalities: z.array(z.string().min(1).max(60)).max(5).default([]),
+  neurodivergence: z.string().max(200).optional().nullable(),
+  disability: z.string().max(200).optional().nullable(),
+  // education (up to 3)
+  educations: z.array(EducationSchema).max(3).default([]),
+  language_ids: z.array(z.string().uuid()).max(20).default([]),
   job_title: z.string().max(120).optional().nullable(),
-  role_type: z.enum(["individual_contributor", "manager", "executive"]).optional().nullable(),
+  role_type: z.enum(["individual_contributor", "manager", "executive", "intern"]).optional().nullable(),
+  years_experience_total: z.number().int().min(0).max(80).optional().nullable(),
+  years_in_role: z.number().int().min(0).max(80).optional().nullable(),
   department_name: z.string().max(80).optional().nullable(),
   team_name: z.string().max(80).optional().nullable(),
-  skill_ids: z.array(z.string().uuid()).max(60),
+  skill_ids: z.array(z.string().uuid()).max(80),
   // work style
   collaboration: z.number().int().min(0).max(100),
   independent_work: z.number().int().min(0).max(100),
@@ -38,6 +45,7 @@ const OnboardingSchema = z.object({
   disc: z.object({ d: z.number(), i: z.number(), s: z.number(), c: z.number(), dominant: z.enum(["D","I","S","C"]) }),
   cognitive: z.object({ analytical: z.number(), practical: z.number(), relational: z.number(), experimental: z.number(), dominant: z.enum(["analytical","practical","relational","experimental"]) }),
 });
+
 
 export const submitOnboarding = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -97,13 +105,19 @@ export const submitOnboarding = createServerFn({ method: "POST" })
       id: userId, org_id: orgId, email,
       full_name: data.full_name, age: data.age ?? null, gender: data.gender ?? null,
       religion: data.religion ?? null, sexual_orientation: data.sexual_orientation ?? null,
+      nationalities: data.nationalities ?? [],
+      neurodivergence: data.neurodivergence ?? null,
+      disability: data.disability ?? null,
       education_level: educationLevel, field_of_study: fieldOfStudy,
       job_title: data.job_title ?? null, role_type: data.role_type ?? null,
+      years_experience_total: data.years_experience_total ?? null,
+      years_in_role: data.years_in_role ?? null,
       department_entity_id: deptId, team_entity_id: teamId,
       onboarding_complete: true, updated_at: new Date().toISOString(),
     };
     const { error: pe } = await supabase.from("profiles").upsert(profileRow, { onConflict: "id" });
     if (pe) throw new Error(pe.message);
+
 
     // Educations: wipe + reinsert
     await supabase.from("profile_educations").delete().eq("profile_id", userId);
