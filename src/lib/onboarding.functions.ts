@@ -30,7 +30,10 @@ const OnboardingSchema = z.object({
   educations: z.array(EducationSchema).max(3).default([]),
   language_ids: z.array(z.string().uuid()).max(20).default([]),
   job_title: z.string().max(120).optional().nullable(),
-  role_type: z.enum(["individual_contributor", "manager", "executive", "intern"]).optional().nullable(),
+  role_type: z.enum([
+    "individual_contributor", "manager", "executive", "intern",
+    "senior_management", "team_lead", "specialist", "consultant", "freelancer", "other",
+  ]).optional().nullable(),
   years_experience_total: z.number().int().min(0).max(80).optional().nullable(),
   years_in_role: z.number().int().min(0).max(80).optional().nullable(),
   department_name: z.string().max(80).optional().nullable(),
@@ -41,6 +44,24 @@ const OnboardingSchema = z.object({
   independent_work: z.number().int().min(0).max(100),
   task_repetition: z.number().int().min(0).max(100),
   idea_generation: z.number().int().min(0).max(100),
+  // problem solving style (0-100 each)
+  problem_solving_style: z.object({
+    structured_problem_solving: z.number().int().min(0).max(100),
+    exploratory_problem_solving: z.number().int().min(0).max(100),
+  }).optional().nullable(),
+  // information processing style (0-100 each)
+  information_processing_style: z.object({
+    depth_oriented_processing: z.number().int().min(0).max(100),
+    breadth_oriented_processing: z.number().int().min(0).max(100),
+    structured_information_preference: z.number().int().min(0).max(100),
+    unstructured_information_preference: z.number().int().min(0).max(100),
+  }).optional().nullable(),
+  // meta-cognition: three self-assessment items 0-100, aggregated mean stored as meta_cognition_score
+  meta_cognition: z.object({
+    reflects_before_decision: z.number().int().min(0).max(100),
+    adjusts_thinking_when_wrong: z.number().int().min(0).max(100),
+    aware_of_personal_biases: z.number().int().min(0).max(100),
+  }).optional().nullable(),
   // DISC + Cognitive
   disc: z.object({ d: z.number(), i: z.number(), s: z.number(), c: z.number(), dominant: z.enum(["D","I","S","C"]) }),
   cognitive: z.object({ analytical: z.number(), practical: z.number(), relational: z.number(), experimental: z.number(), dominant: z.enum(["analytical","practical","relational","experimental"]) }),
