@@ -193,7 +193,7 @@ export const DISC_META: Record<DiscDim, { name: string; color: string; tag: stri
 // Supports balanced profiles and 1–3 dominant trait combinations.
 export function discInterpretation(d: number, i: number, s: number, c: number): string {
   const arr: { k: DiscDim; v: number }[] = [
-    { k: "D", v: d }, { k: "I", v: i }, { k: "S", v: s }, { k: "C", v: c },
+    { k: "D" as DiscDim, v: d }, { k: "I" as DiscDim, v: i }, { k: "S" as DiscDim, v: s }, { k: "C" as DiscDim, v: c },
   ].sort((a, b) => b.v - a.v);
   const total = arr.reduce((a, b) => a + b.v, 0);
   if (total === 0) return "Take the DISC assessment to see your interpretation.";
