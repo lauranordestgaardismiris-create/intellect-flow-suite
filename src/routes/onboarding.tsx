@@ -512,27 +512,30 @@ function OnboardingPage() {
                 <Select value={roleType} onValueChange={(v) => setRoleType(v as any)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="executive">Executive</SelectItem>
-                    <SelectItem value="senior_management">Senior Management</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="team_lead">Team Lead</SelectItem>
+                    <SelectItem value="intern">Intern</SelectItem>
+                    <SelectItem value="student_worker">Student Worker</SelectItem>
+                    <SelectItem value="graduate_trainee">Graduate / Trainee</SelectItem>
+                    <SelectItem value="analyst">Analyst</SelectItem>
                     <SelectItem value="individual_contributor">Individual Contributor</SelectItem>
                     <SelectItem value="specialist">Specialist</SelectItem>
-                    <SelectItem value="intern">Intern</SelectItem>
                     <SelectItem value="consultant">Consultant</SelectItem>
                     <SelectItem value="freelancer">Freelancer</SelectItem>
+                    <SelectItem value="team_lead">Team Lead</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="senior_management">Senior Management</SelectItem>
+                    <SelectItem value="executive">Executive</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>Years of experience (total)</Label>
-                  <Input type="number" min={0} value={yearsTotal} onChange={(e) => setYearsTotal(e.target.value)} placeholder="e.g. 8" />
+                  <Label>Years of professional experience (total)</Label>
+                  <Input type="number" min={0} value={yearsTotal} onChange={(e) => setYearsTotal(e.target.value)} placeholder="0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Years in current role</Label>
-                  <Input type="number" min={0} value={yearsInRole} onChange={(e) => setYearsInRole(e.target.value)} placeholder="e.g. 2" />
+                  <Input type="number" min={0} value={yearsInRole} onChange={(e) => setYearsInRole(e.target.value)} placeholder="0" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
