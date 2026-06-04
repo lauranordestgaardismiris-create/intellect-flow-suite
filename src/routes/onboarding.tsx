@@ -886,7 +886,14 @@ function OnboardingPage() {
                           </div>
                         </div>
                       ))}
-                      <p className="text-xs text-muted-foreground pt-1">Dominant: <strong className="text-foreground">{COG_LABEL[cogPreview.dominant] ?? cogPreview.dominant}</strong></p>
+                      {(() => {
+                        const { prefix, names } = cognitiveDominantLabel(cogPreview);
+                        return (
+                          <p className="text-xs text-muted-foreground pt-1">
+                            {prefix}{names ? ": " : ""}<strong className="text-foreground">{names}</strong>
+                          </p>
+                        );
+                      })()}
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">Complete the cognitive step to see your breakdown.</p>
