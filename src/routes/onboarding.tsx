@@ -22,7 +22,26 @@ export const Route = createFileRoute("/onboarding")({
 
 type Catalogs = { skills: { id: string; name: string; category: string | null; subcategory: string | null }[]; languages: { id: string; name: string }[] };
 
-const STEPS = ["Workspace", "Personal", "Demographics", "Education", "Professional", "Skills", "Work style", "DISC", "Cognitive", "Review"] as const;
+const STEPS = ["Workspace", "Personal", "Identity & Background", "Education", "Professional", "Skills", "Work style", "DISC", "Cognitive", "Review"] as const;
+
+// Nationality → suggested language name (matched case-insensitively against catalog)
+const NATIONALITY_LANGUAGE_MAP: Record<string, string> = {
+  danish: "Danish", german: "German", french: "French", spanish: "Spanish",
+  italian: "Italian", greek: "Greek", dutch: "Dutch", swedish: "Swedish",
+  norwegian: "Norwegian", portuguese: "Portuguese",
+};
+
+// Cognitive label helper that handles ties (co-dominant / balanced / fully balanced)
+function cognitiveDominantLabel(scores: { analytical: number; practical: number; relational: number; experimental: number }) {
+  const COG_LABEL: Record<string, string> = { analytical: "Analytical", practical: "Practical", relational: "Strategic", experimental: "Creative" };
+  const entries = (["analytical", "practical", "relational", "experimental"] as const).map((k) => ({ k, v: scores[k] }));
+  const max = Math.max(...entries.map((e) => e.v));
+  const top = entries.filter((e) => e.v === max).map((e) => COG_LABEL[e.k]);
+  if (top.length === 4) return { prefix: "Fully balanced", names: "" };
+  if (top.length === 3) return { prefix: "Balanced across", names: `${top[0]}, ${top[1]} & ${top[2]}` };
+  if (top.length === 2) return { prefix: "Co-dominant", names: `${top[0]} & ${top[1]}` };
+  return { prefix: "Dominant", names: top[0] };
+}
 
 // ---- option lists ----
 const GENDER_OPTIONS = ["Female", "Male", "Other"] as const;
