@@ -149,6 +149,8 @@ export const submitOnboarding = createServerFn({ method: "POST" })
       information_processing_style: data.information_processing_style ?? null,
       meta_cognition_score: metaCognitionScore,
       disc_interpretation: discText,
+      insights_summary_short: null,
+      insights_summary_long: null,
       onboarding_complete: true, updated_at: new Date().toISOString(),
     };
     const { error: pe } = await supabase.from("profiles").upsert(profileRow, { onConflict: "id" });
