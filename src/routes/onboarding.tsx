@@ -664,12 +664,38 @@ function OnboardingPage() {
                       <div className="flex flex-wrap gap-2">
                         {(catalogs?.languages ?? [])
                           .filter((l) => langIds.includes(l.id))
-                          .map((l) => (
-                            <span key={l.id} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs">
-                              {l.name}
-                              <button type="button" onClick={() => setLangIds((a) => a.filter((x) => x !== l.id))} className="text-muted-foreground hover:text-destructive">×</button>
-                            </span>
-                          ))}
+                          .map((l) => {
+                            const isSuggested = suggestedLangIds.includes(l.id);
+                            return (
+                              <span
+                                key={l.id}
+                                className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs border ${
+                                  isSuggested
+                                    ? "bg-accent/40 border-dashed text-foreground/80"
+                                    : "bg-primary/10 border-transparent"
+                                }`}
+                                title={isSuggested ? "Suggested from your nationality" : undefined}
+                              >
+                                {l.name}
+                                {isSuggested && (
+                                  <span className="ml-1 rounded-sm bg-muted px-1 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                                    Suggested
+                                  </span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLangIds((a) => a.filter((x) => x !== l.id));
+                                    setSuggestedLangIds((a) => a.filter((x) => x !== l.id));
+                                    if (isSuggested) setDismissedLangSuggestions((a) => a.includes(l.id) ? a : [...a, l.id]);
+                                  }}
+                                  className="text-muted-foreground hover:text-destructive"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            );
+                          })}
                       </div>
                     )}
                     <div className="max-h-64 overflow-y-auto flex flex-wrap gap-2 pr-1">
@@ -677,7 +703,13 @@ function OnboardingPage() {
                         <button
                           key={l.id}
                           type="button"
-                          onClick={() => setLangIds((a) => toggle(a, l.id))}
+                          onClick={() => {
+                            setLangIds((a) => toggle(a, l.id));
+                            setSuggestedLangIds((a) => a.filter((x) => x !== l.id));
+                            if (langIds.includes(l.id) && suggestedLangIds.includes(l.id)) {
+                              setDismissedLangSuggestions((a) => a.includes(l.id) ? a : [...a, l.id]);
+                            }
+                          }}
                           className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                             langIds.includes(l.id)
                               ? "bg-primary text-primary-foreground border-primary"
