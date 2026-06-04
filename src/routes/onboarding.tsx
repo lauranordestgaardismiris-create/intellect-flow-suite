@@ -429,11 +429,11 @@ function OnboardingPage() {
               </div>
               <div className="space-y-2">
                 <Label>Neurodivergence (optional)</Label>
-                <Input value={neurodivergence} onChange={(e) => setNeurodivergence(e.target.value)} placeholder="e.g. ADHD, Autism, Dyslexia, prefer not to say" />
+                <Input value={neurodivergence} onChange={(e) => setNeurodivergence(e.target.value)} placeholder="e.g. ADHD, Autism, Dyslexia" />
               </div>
               <div className="space-y-2">
                 <Label>Disability (optional)</Label>
-                <Input value={disability} onChange={(e) => setDisability(e.target.value)} placeholder="Specify or leave blank" />
+                <Input value={disability} onChange={(e) => setDisability(e.target.value)} placeholder="e.g. mobility, visual, hearing" />
               </div>
             </div>
           )}
