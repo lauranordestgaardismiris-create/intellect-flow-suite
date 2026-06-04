@@ -104,7 +104,10 @@ function OnboardingPage() {
   const [disability, setDisability] = useState("");
   const [educations, setEducations] = useState<Education[]>([emptyEdu()]);
   const [jobTitle, setJobTitle] = useState("");
-  const [roleType, setRoleType] = useState<"individual_contributor" | "manager" | "executive" | "intern">("individual_contributor");
+  const [roleType, setRoleType] = useState<
+    "individual_contributor" | "manager" | "executive" | "intern" |
+    "senior_management" | "team_lead" | "specialist" | "consultant" | "freelancer" | "other"
+  >("individual_contributor");
   const [yearsTotal, setYearsTotal] = useState<string>("");
   const [yearsInRole, setYearsInRole] = useState<string>("");
   const [department, setDepartment] = useState("");
@@ -116,6 +119,18 @@ function OnboardingPage() {
   const [indep, setIndep] = useState(60);
   const [repet, setRepet] = useState(40);
   const [idea, setIdea] = useState(60);
+  // Problem solving style
+  const [psStructured, setPsStructured] = useState(50);
+  const [psExploratory, setPsExploratory] = useState(50);
+  // Information processing style
+  const [ipDepth, setIpDepth] = useState(50);
+  const [ipBreadth, setIpBreadth] = useState(50);
+  const [ipStructured, setIpStructured] = useState(50);
+  const [ipUnstructured, setIpUnstructured] = useState(50);
+  // Meta-cognition
+  const [mcReflect, setMcReflect] = useState(60);
+  const [mcAdjust, setMcAdjust] = useState(60);
+  const [mcBias, setMcBias] = useState(60);
   const [discA, setDiscA] = useState<(DiscDim | null)[]>(Array(DISC_QUESTIONS.length).fill(null));
   const [cogA, setCogA] = useState<(CognitiveDim | null)[]>(Array(COGNITIVE_QUESTIONS.length).fill(null));
   const [busy, setBusy] = useState(false);
