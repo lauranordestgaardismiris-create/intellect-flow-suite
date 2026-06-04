@@ -1,12 +1,18 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { computeCI, computeSubScores, automationRisk, type MemberRow } from "./ci-engine";
+import {
+  computeCI, computeSubScores, computeBlindness, confidenceLabel,
+  automationRisk, type MemberRow,
+} from "./ci-engine";
 
 type OrgSnapshot = {
   org: { id: string; name: string };
   isAdmin: boolean;
   entities: Array<{ id: string; name: string; type: "company" | "department" | "team"; parent_id: string | null }>;
-  members: Array<MemberRow & { id: string; full_name: string; department_entity_id: string | null; team_entity_id: string | null; job_title: string | null }>;
+  members: Array<MemberRow & {
+    id: string; full_name: string;
+    department_entity_id: string | null; team_entity_id: string | null; job_title: string | null;
+  }>;
   scores: Array<{ entity_id: string; score: number; sub_scores: any; total_users: number }>;
 };
 
@@ -20,11 +26,11 @@ async function buildSnapshot(supabase: any, userId: string): Promise<OrgSnapshot
   const [{ data: org }, { data: entities }, { data: profiles }, { data: ps }, { data: ws }, { data: dr }, { data: cr }, { data: scores }] = await Promise.all([
     supabase.from("organizations").select("id, name").eq("id", orgId).single(),
     supabase.from("entities").select("id, name, type, parent_id").eq("org_id", orgId),
-    supabase.from("profiles").select("id, full_name, role_type, department_entity_id, team_entity_id, job_title").eq("org_id", orgId),
+    supabase.from("profiles").select("id, full_name, role_type, department_entity_id, team_entity_id, job_title, problem_solving_style, information_processing_style, meta_cognition_score").eq("org_id", orgId),
     supabase.from("profile_skills").select("profile_id, skill_id, skills(name)"),
     supabase.from("work_style").select("profile_id, collaboration, independent_work, task_repetition, idea_generation"),
-    supabase.from("disc_results").select("profile_id, dominant"),
-    supabase.from("cognitive_results").select("profile_id, dominant"),
+    supabase.from("disc_results").select("profile_id, d, i, s, c, dominant"),
+    supabase.from("cognitive_results").select("profile_id, analytical, practical, relational, experimental, dominant"),
     supabase.from("ci_scores").select("entity_id, score, sub_scores, total_users").eq("org_id", orgId),
   ]);
 
@@ -42,6 +48,10 @@ async function buildSnapshot(supabase: any, userId: string): Promise<OrgSnapshot
 
   const members = (profiles ?? []).map((p: any) => {
     const w = wsByProfile.get(p.id);
+    const d = drByProfile.get(p.id);
+    const c = crByProfile.get(p.id);
+    const pss = p.problem_solving_style ?? null;
+    const ips = p.information_processing_style ?? null;
     return {
       id: p.id,
       full_name: p.full_name,
@@ -50,11 +60,25 @@ async function buildSnapshot(supabase: any, userId: string): Promise<OrgSnapshot
       department_entity_id: p.department_entity_id,
       team_entity_id: p.team_entity_id,
       skills: skillsByProfile.get(p.id) ?? [],
-      disc_dominant: drByProfile.get(p.id)?.dominant ?? null,
-      cognitive_dominant: crByProfile.get(p.id)?.dominant ?? null,
+      disc_dominant: d?.dominant ?? null,
+      cognitive_dominant: c?.dominant ?? null,
       collaboration: w?.collaboration ?? 50,
+      independent_work: w?.independent_work ?? 50,
       idea_generation: w?.idea_generation ?? 50,
       task_repetition: w?.task_repetition ?? 50,
+      disc: d ? { d: d.d, i: d.i, s: d.s, c: d.c } : null,
+      cognitive: c ? { analytical: c.analytical, practical: c.practical, relational: c.relational, experimental: c.experimental } : null,
+      problem_solving: pss ? {
+        structured: pss.structured_problem_solving ?? 0,
+        exploratory: pss.exploratory_problem_solving ?? 0,
+      } : null,
+      information_processing: ips ? {
+        depth: ips.depth_oriented_processing ?? 0,
+        breadth: ips.breadth_oriented_processing ?? 0,
+        structured: ips.structured_information_preference ?? 0,
+        unstructured: ips.unstructured_information_preference ?? 0,
+      } : null,
+      meta_cognition: typeof p.meta_cognition_score === "number" ? p.meta_cognition_score : (p.meta_cognition_score != null ? Number(p.meta_cognition_score) : null),
     };
   });
 
@@ -83,26 +107,32 @@ export const recomputeCIScores = createServerFn({ method: "POST" })
     if (!snap) throw new Error("No organization found");
     const { org, entities, members } = snap;
 
-    // Company-level (members that have any entity)
-    const all = members;
     const companyEntity = entities.find((e) => e.type === "company");
     const rows: any[] = [];
 
     function pushFor(entityId: string, group: typeof members) {
       const sub = computeSubScores(group as any);
       const score = computeCI(sub);
-      rows.push({ entity_id: entityId, org_id: org.id, score, sub_scores: sub, total_users: group.length, computed_at: new Date().toISOString() });
+      const blindness = computeBlindness(sub);
+      const confidence = confidenceLabel(group.length);
+      rows.push({
+        entity_id: entityId,
+        org_id: org.id,
+        score,
+        sub_scores: {
+          ...sub,
+          collective_blindness_score: blindness,
+          confidence,
+        },
+        total_users: group.length,
+        computed_at: new Date().toISOString(),
+      });
     }
 
-    if (companyEntity) pushFor(companyEntity.id, all);
+    if (companyEntity) pushFor(companyEntity.id, members);
     for (const e of entities) {
-      if (e.type === "department") {
-        const g = members.filter((m) => m.department_entity_id === e.id);
-        pushFor(e.id, g);
-      } else if (e.type === "team") {
-        const g = members.filter((m) => m.team_entity_id === e.id);
-        pushFor(e.id, g);
-      }
+      if (e.type === "department") pushFor(e.id, members.filter((m) => m.department_entity_id === e.id));
+      else if (e.type === "team") pushFor(e.id, members.filter((m) => m.team_entity_id === e.id));
     }
     if (rows.length > 0) {
       await supabase.from("ci_scores").upsert(rows, { onConflict: "entity_id" });

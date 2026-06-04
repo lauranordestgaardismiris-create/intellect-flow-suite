@@ -122,9 +122,15 @@ function DashboardPage() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <div className="rounded-xl border bg-card p-6 flex flex-col items-center justify-center">
+        <div className="rounded-xl border bg-card p-6 flex flex-col items-center justify-center gap-4">
           <CIGauge score={selectedScore?.score ?? 0} label={selectedEntityObj?.name ?? "Company"} />
-          <p className="mt-2 text-xs text-muted-foreground">{selectedScore?.total_users ?? 0} members in this view</p>
+          <CIGauge score={(selectedScore?.sub_scores as any)?.collective_blindness_score ?? 0} label="Collective Blindness" />
+          <p className="mt-2 text-xs text-muted-foreground">
+            {selectedScore?.total_users ?? 0} members ·{" "}
+            <span className={`uppercase tracking-wider ${
+              (selectedScore?.sub_scores as any)?.confidence === "low" ? "text-warning" : "text-muted-foreground"
+            }`}>{(selectedScore?.sub_scores as any)?.confidence ?? "—"} confidence</span>
+          </p>
         </div>
         <div className="rounded-xl border bg-card p-6 lg:col-span-2">
           <div className="flex items-center justify-between mb-3">
