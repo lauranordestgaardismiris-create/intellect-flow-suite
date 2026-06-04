@@ -225,7 +225,7 @@ function OnboardingPage() {
         neurodivergence: neurodivergence.trim() || null,
         disability: disability.trim() || null,
         educations: cleanEdus,
-        language_ids: [],
+        language_ids: langIds,
         job_title: jobTitle || null, role_type: roleType,
         years_experience_total: yearsTotal ? parseInt(yearsTotal) : null,
         years_in_role: yearsInRole ? parseInt(yearsInRole) : null,
