@@ -113,6 +113,8 @@ function OnboardingPage() {
   const [department, setDepartment] = useState("");
   const [team, setTeam] = useState("");
   const [skillIds, setSkillIds] = useState<string[]>([]);
+  const [langIds, setLangIds] = useState<string[]>([]);
+  const [langSearch, setLangSearch] = useState("");
   const [openMainCats, setOpenMainCats] = useState<string[]>([]);
   const [openSubCats, setOpenSubCats] = useState<string[]>([]);
 
@@ -141,12 +143,15 @@ function OnboardingPage() {
   // We map those into higher-level main categories for navigation. Subcategory (DB column)
   // is used when present; otherwise the existing category acts as the subcategory label.
   const MAIN_CATEGORY_MAP: Record<string, string> = {
+    ai: "AI",
+    "machine learning": "AI",
     programming: "Technical",
     "data & analytics": "Technical",
     analytics: "Technical",
     engineering: "Technical",
     cybersecurity: "Technical",
-    design: "Creative",
+    design: "Creative / Design",
+    creative: "Creative / Design",
     finance: "Business",
     marketing: "Business",
     sales: "Business",
@@ -156,20 +161,18 @@ function OnboardingPage() {
     communication: "People & Leadership",
     hr: "People & Leadership",
     soft: "People & Leadership",
-    languages: "Languages",
     legal: "Business",
   };
-  const MAIN_CATEGORY_ORDER = ["Technical", "Business", "Creative", "People & Leadership", "Languages", "Other"];
+  const MAIN_CATEGORY_ORDER = ["AI", "Technical", "Creative / Design", "Business", "People & Leadership", "Other"];
 
   type SkillItem = { id: string; name: string };
   const skillTree = useMemo(() => {
-    // main -> sub -> SkillItem[]
     const tree: Record<string, Record<string, SkillItem[]>> = {};
     for (const s of catalogs?.skills ?? []) {
       const rawCat = (s.category || "Other").trim();
+      if (rawCat.toLowerCase() === "languages") continue;
       const main = MAIN_CATEGORY_MAP[rawCat.toLowerCase()] || "Other";
       const sub = (s as any).subcategory || rawCat;
-      // Normalize sub label to Title Case dedupe (e.g., "programming" + "Programming")
       const subKey = sub.charAt(0).toUpperCase() + sub.slice(1);
       tree[main] = tree[main] || {};
       tree[main][subKey] = tree[main][subKey] || [];
@@ -177,6 +180,13 @@ function OnboardingPage() {
     }
     return tree;
   }, [catalogs]);
+
+  const filteredLanguages = useMemo(() => {
+    const all = catalogs?.languages ?? [];
+    const q = langSearch.trim().toLowerCase();
+    const list = q ? all.filter((l) => l.name.toLowerCase().includes(q)) : all;
+    return [...list].sort((a, b) => a.name.localeCompare(b.name));
+  }, [catalogs, langSearch]);
 
   function toggle<T>(arr: T[], v: T): T[] {
     return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
@@ -215,7 +225,7 @@ function OnboardingPage() {
         neurodivergence: neurodivergence.trim() || null,
         disability: disability.trim() || null,
         educations: cleanEdus,
-        language_ids: [],
+        language_ids: langIds,
         job_title: jobTitle || null, role_type: roleType,
         years_experience_total: yearsTotal ? parseInt(yearsTotal) : null,
         years_in_role: yearsInRole ? parseInt(yearsInRole) : null,
@@ -572,8 +582,68 @@ function OnboardingPage() {
                   );
                 })}
               </div>
+
+              {/* Languages — dedicated main category with global searchable list */}
+              <div className="rounded-xl border bg-background">
+                <button
+                  type="button"
+                  onClick={() => setOpenMainCats((a) => toggle(a, "Languages"))}
+                  className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-muted-foreground">{openMainCats.includes("Languages") ? "▾" : "▸"}</span>
+                    Languages
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {langIds.length > 0
+                      ? `${langIds.length} selected · ${catalogs?.languages?.length ?? 0} available`
+                      : `Search ${catalogs?.languages?.length ?? 0} languages`}
+                  </span>
+                </button>
+                {openMainCats.includes("Languages") && (
+                  <div className="border-t px-3 py-3 space-y-3">
+                    <Input
+                      value={langSearch}
+                      onChange={(e) => setLangSearch(e.target.value)}
+                      placeholder="Search languages…"
+                    />
+                    {langIds.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {(catalogs?.languages ?? [])
+                          .filter((l) => langIds.includes(l.id))
+                          .map((l) => (
+                            <span key={l.id} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs">
+                              {l.name}
+                              <button type="button" onClick={() => setLangIds((a) => a.filter((x) => x !== l.id))} className="text-muted-foreground hover:text-destructive">×</button>
+                            </span>
+                          ))}
+                      </div>
+                    )}
+                    <div className="max-h-64 overflow-y-auto flex flex-wrap gap-2 pr-1">
+                      {filteredLanguages.slice(0, 80).map((l) => (
+                        <button
+                          key={l.id}
+                          type="button"
+                          onClick={() => setLangIds((a) => toggle(a, l.id))}
+                          className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                            langIds.includes(l.id)
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-card hover:bg-muted"
+                          }`}
+                        >
+                          {l.name}
+                        </button>
+                      ))}
+                      {filteredLanguages.length === 0 && (
+                        <p className="text-xs text-muted-foreground py-2">No languages match "{langSearch}".</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <p className="text-xs text-muted-foreground">
-                {skillIds.length} skill{skillIds.length === 1 ? "" : "s"} selected across all categories
+                {skillIds.length} skill{skillIds.length === 1 ? "" : "s"} · {langIds.length} language{langIds.length === 1 ? "" : "s"} selected
               </p>
             </div>
           )}
@@ -693,22 +763,83 @@ function OnboardingPage() {
             </div>
           )}
 
-          {step === 9 && (
-            <div className="space-y-5 py-4">
-              <div className="text-center space-y-1">
-                <h2 className="text-2xl font-semibold">Your DISC profile</h2>
-                <p className="text-sm text-muted-foreground">Here's how your answers map across the four DISC dimensions.</p>
+          {step === 9 && (() => {
+            const cogPreview = scoreCognitive(cogA.filter(Boolean) as CognitiveDim[]);
+            const COG_LABEL: Record<string, string> = { analytical: "Analytical", practical: "Practical", relational: "Strategic", experimental: "Creative" };
+            const cogBars: Array<[string, number]> = [
+              ["Analytical", cogPreview.analytical],
+              ["Practical", cogPreview.practical],
+              ["Strategic", cogPreview.relational],
+              ["Creative", cogPreview.experimental],
+            ];
+            const mcMean = Math.round((mcReflect + mcAdjust + mcBias) / 3);
+            return (
+              <div className="space-y-6 py-2">
+                <div className="text-center space-y-1">
+                  <h2 className="text-2xl font-semibold">Your profile snapshot</h2>
+                  <p className="text-sm text-muted-foreground">A multi-dimensional overview from all assessments.</p>
+                </div>
+
+                <section className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">DISC personality</p>
+                  {discA.every(Boolean) ? (
+                    <DiscBar d={discPreview.d} i={discPreview.i} s={discPreview.s} c={discPreview.c} />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Complete the DISC step to see your breakdown.</p>
+                  )}
+                </section>
+
+                <section className="space-y-2 border-t pt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cognitive thinking style</p>
+                  {cogA.every(Boolean) ? (
+                    <div className="space-y-2">
+                      {cogBars.map(([label, val]) => (
+                        <div key={label}>
+                          <div className="flex justify-between text-xs"><span>{label}</span><span className="tabular-nums text-muted-foreground">{val}</span></div>
+                          <div className="h-2 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-primary" style={{ width: `${val}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                      <p className="text-xs text-muted-foreground pt-1">Dominant: <strong className="text-foreground">{COG_LABEL[cogPreview.dominant] ?? cogPreview.dominant}</strong></p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Complete the cognitive step to see your breakdown.</p>
+                  )}
+                </section>
+
+                <section className="space-y-2 border-t pt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Work & thinking style</p>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    {([
+                      ["Collaboration", collab],["Independent", indep],
+                      ["Repetition", repet],["Innovation", idea],
+                      ["Structured problem solving", psStructured],["Exploratory problem solving", psExploratory],
+                      ["Depth", ipDepth],["Breadth", ipBreadth],
+                      ["Meta-cognition", mcMean],
+                    ] as const).map(([label, val]) => (
+                      <div key={label} className="rounded-md border bg-background p-2">
+                        <div className="text-muted-foreground">{label}</div>
+                        <div className="text-base font-semibold tabular-nums">{val}</div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="space-y-2 border-t pt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Skills & languages</p>
+                  <p className="text-sm">
+                    <strong className="text-foreground">{skillIds.length}</strong> skill{skillIds.length === 1 ? "" : "s"} ·{" "}
+                    <strong className="text-foreground">{langIds.length}</strong> language{langIds.length === 1 ? "" : "s"}
+                  </p>
+                </section>
+
+                <div className="pt-2 text-center">
+                  <Button onClick={finish} disabled={busy} size="lg">{busy ? "Submitting…" : "Submit & continue"}</Button>
+                </div>
               </div>
-              {discA.every(Boolean) ? (
-                <DiscBar d={discPreview.d} i={discPreview.i} s={discPreview.s} c={discPreview.c} />
-              ) : (
-                <p className="text-sm text-muted-foreground text-center">Complete the DISC step to see your breakdown.</p>
-              )}
-              <div className="pt-4 text-center">
-                <Button onClick={finish} disabled={busy} size="lg">{busy ? "Submitting…" : "Submit & continue"}</Button>
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {step < 9 && (
             <div className="mt-6 flex justify-between">
