@@ -140,22 +140,22 @@ function OnboardingPage() {
   const [openMainCats, setOpenMainCats] = useState<string[]>([]);
   const [openSubCats, setOpenSubCats] = useState<string[]>([]);
 
-  const [collab, setCollab] = useState(60);
-  const [indep, setIndep] = useState(60);
-  const [repet, setRepet] = useState(40);
-  const [idea, setIdea] = useState(60);
+  const [collab, setCollab] = useState(0);
+  const [indep, setIndep] = useState(0);
+  const [repet, setRepet] = useState(0);
+  const [idea, setIdea] = useState(0);
   // Problem solving style
-  const [psStructured, setPsStructured] = useState(50);
-  const [psExploratory, setPsExploratory] = useState(50);
+  const [psStructured, setPsStructured] = useState(0);
+  const [psExploratory, setPsExploratory] = useState(0);
   // Information processing style
-  const [ipDepth, setIpDepth] = useState(50);
-  const [ipBreadth, setIpBreadth] = useState(50);
-  const [ipStructured, setIpStructured] = useState(50);
-  const [ipUnstructured, setIpUnstructured] = useState(50);
+  const [ipDepth, setIpDepth] = useState(0);
+  const [ipBreadth, setIpBreadth] = useState(0);
+  const [ipStructured, setIpStructured] = useState(0);
+  const [ipUnstructured, setIpUnstructured] = useState(0);
   // Meta-cognition
-  const [mcReflect, setMcReflect] = useState(60);
-  const [mcAdjust, setMcAdjust] = useState(60);
-  const [mcBias, setMcBias] = useState(60);
+  const [mcReflect, setMcReflect] = useState(0);
+  const [mcAdjust, setMcAdjust] = useState(0);
+  const [mcBias, setMcBias] = useState(0);
   const [discA, setDiscA] = useState<(DiscDim | null)[]>(Array(DISC_QUESTIONS.length).fill(null));
   const [cogA, setCogA] = useState<(CognitiveDim | null)[]>(Array(COGNITIVE_QUESTIONS.length).fill(null));
   const [busy, setBusy] = useState(false);
