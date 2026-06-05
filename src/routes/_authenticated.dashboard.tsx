@@ -199,7 +199,7 @@ function DashboardPage() {
           id: e.id, name: e.name, type: e.type,
           members: members.length,
           completedPct: members.length ? Math.round((completed / members.length) * 100) : 0,
-          score_a: sc?.score_a ?? 0, score_b: sc?.score_b ?? 0, score_c: sc?.score_c ?? 0,
+          score_a: sc?.score_a ?? 0, score_b: (sc?.score_b ?? null) as number | null, score_c: sc?.score_c ?? 0,
           blindness: sc?.blindness ?? 0,
         };
       })
