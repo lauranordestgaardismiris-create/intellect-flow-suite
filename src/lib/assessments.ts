@@ -184,10 +184,10 @@ export function scoreCognitive(answers: CognitiveDim[]) {
 
 // ============ DISC presentation helpers ============
 export const DISC_META: Record<DiscDim, { name: string; color: string; tag: string; verbs: string }> = {
-  D: { name: "Dominance",         color: "#ef4444", tag: "Red",    verbs: "drive results and take decisive action" },
-  I: { name: "Influence",         color: "#facc15", tag: "Yellow", verbs: "energize teams and inspire people" },
-  S: { name: "Steadiness",        color: "#22c55e", tag: "Green",  verbs: "create stability and support others" },
-  C: { name: "Conscientiousness", color: "#3b82f6", tag: "Blue",   verbs: "ensure precision, quality and rigor" },
+  D: { name: "Dominance",         color: "#EF4444", tag: "Red",    verbs: "drive results and take decisive action" },
+  I: { name: "Influence",         color: "#F59E0B", tag: "Yellow", verbs: "energize teams and inspire people" },
+  S: { name: "Steadiness",        color: "#10B981", tag: "Green",  verbs: "create stability and support others" },
+  C: { name: "Conscientiousness", color: "#3B82F6", tag: "Blue",   verbs: "ensure precision, quality and rigor" },
 };
 
 // Supports balanced profiles and 1–3 dominant trait combinations.
