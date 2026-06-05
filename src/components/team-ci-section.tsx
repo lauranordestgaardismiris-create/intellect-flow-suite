@@ -1,4 +1,4 @@
-import { ScoreCircle } from "@/components/score-circle";
+import { FilledCircle } from "@/components/filled-circle";
 import type { MyProfilePayload } from "@/lib/my-profile.functions";
 
 export function TeamCISection({ team }: { team: MyProfilePayload["team"] }) {
@@ -21,17 +21,17 @@ export function TeamCISection({ team }: { team: MyProfilePayload["team"] }) {
       ) : (
         <>
           <div className="grid grid-cols-3 gap-4 items-start justify-items-center">
-            <ScoreCircle score={team.scores.score_c} label="Collective Intelligence" />
-            <ScoreCircle score={team.scores.score_a} label="Behavioural Profile" />
+            <FilledCircle score={team.scores.score_c} size={80} label="Collective Intelligence" />
+            <FilledCircle score={team.scores.score_a} size={80} label="Behavioural Profile" />
             {team.scores.score_b === null ? (
               <div className="flex flex-col items-center gap-2 text-center max-w-[160px]">
-                <div className="h-[120px] w-[120px] rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-[11px] text-muted-foreground px-3 leading-tight">
-                  Not enough identity data to calculate
+                <div className="h-[80px] w-[80px] rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-[10px] text-muted-foreground px-2 leading-tight">
+                  Not enough identity data
                 </div>
-                <span className="text-sm font-medium">Diversity Composition</span>
+                <span className="text-xs text-muted-foreground">Diversity Composition</span>
               </div>
             ) : (
-              <ScoreCircle score={team.scores.score_b} label="Diversity Composition" />
+              <FilledCircle score={team.scores.score_b} size={80} label="Diversity Composition" />
             )}
           </div>
           <p className="text-xs text-center text-muted-foreground">

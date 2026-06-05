@@ -27,12 +27,12 @@ async function buildSnapshot(supabase: any, userId: string): Promise<OrgSnapshot
   const [{ data: org }, { data: entities }, { data: profiles }, { data: ps }, { data: ws }, { data: dr }, { data: cr }, { data: scores }] = await Promise.all([
     supabase.from("organizations").select("id, name").eq("id", orgId).single(),
     supabase.from("entities").select("id, name, type, parent_id").eq("org_id", orgId),
-    supabase.from("profiles").select("id, full_name, role_type, department_entity_id, team_entity_id, job_title, problem_solving_style, information_processing_style, meta_cognition_score, gender, age, nationalities, neurodivergence, disability, onboarding_complete").eq("org_id", orgId),
+    supabase.from("profiles").select("id, full_name, role_type, department_entity_id, team_entity_id, job_title, problem_solving_style, information_processing_style, meta_cognition_score, gender, age, nationalities, neurodivergence, disability, onboarding_complete, years_experience_total, education_level").eq("org_id", orgId),
     supabase.from("profile_skills").select("profile_id, skill_id, skills(name)"),
     supabase.from("work_style").select("profile_id, collaboration, independent_work, task_repetition, idea_generation"),
     supabase.from("disc_results").select("profile_id, d, i, s, c, dominant"),
     supabase.from("cognitive_results").select("profile_id, analytical, practical, relational, experimental, dominant"),
-    supabase.from("ci_scores").select("entity_id, score, sub_scores, total_users").eq("org_id", orgId),
+    supabase.from("ci_scores").select("entity_id, score, sub_scores, total_users, score_a, score_b, score_c, variable_insights").eq("org_id", orgId),
   ]);
 
   const skillsByProfile = new Map<string, string[]>();
@@ -66,6 +66,8 @@ async function buildSnapshot(supabase: any, userId: string): Promise<OrgSnapshot
       nationalities: p.nationalities ?? [],
       neurodivergence: p.neurodivergence ?? null,
       disability: p.disability ?? null,
+      years_experience_total: p.years_experience_total ?? null,
+      education_level: p.education_level ?? null,
       skills: skillsByProfile.get(p.id) ?? [],
       disc_dominant: d?.dominant ?? null,
       cognitive_dominant: c?.dominant ?? null,

@@ -5,8 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 import { getOrgSnapshot, recomputeCIScores } from "@/lib/ci.functions";
 import { generateInsights } from "@/lib/ai.functions";
 import { getMyProfileStatus } from "@/lib/onboarding.functions";
-import { CIGauge } from "@/components/ci-gauge";
-import { ScoreCircle } from "@/components/score-circle";
+import { FilledCircle } from "@/components/filled-circle";
+import { VariableExplorer } from "@/components/variable-explorer";
+import { BlindnessPanel } from "@/components/blindness-panel";
 import { InsightsPanel } from "@/components/insights-panel";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -238,38 +239,43 @@ function DashboardPage() {
         </div>
       </div>
 
-      {/* Three CI circles + Blindness */}
-      <div className="grid lg:grid-cols-[1fr_1fr] gap-6">
-        <div className="rounded-xl border bg-card p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-            Collective Intelligence — {headerLabel}
-          </h2>
-          {selectedScores ? (
-            <div className="grid grid-cols-3 gap-4 justify-items-center">
-              <ScoreCircle score={selectedScores.score_c} label="Collective Intelligence" />
-              <ScoreCircle score={selectedScores.score_a} label="Behavioural Profile" />
-              {selectedScores.score_b === null ? (
-                <div className="flex flex-col items-center gap-2 text-center max-w-[160px]">
-                  <div className="h-[120px] w-[120px] rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-[11px] text-muted-foreground px-3 leading-tight">
-                    Not enough identity data to calculate
-                  </div>
-                  <span className="text-sm font-medium">Diversity Composition</span>
+      {/* Three CI circles */}
+      <div className="rounded-xl border bg-card p-6">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+          Collective Intelligence — {headerLabel}
+        </h2>
+        {selectedScores ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 justify-items-center">
+            <FilledCircle score={selectedScores.score_c} size={180} label="Collective Intelligence (Score C)" />
+            <FilledCircle score={selectedScores.score_a} size={180} label="Behavioural Profile (Score A)" />
+            {selectedScores.score_b === null ? (
+              <div className="flex flex-col items-center gap-2 text-center max-w-[200px]">
+                <div className="h-[180px] w-[180px] rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-xs text-muted-foreground px-4 leading-tight">
+                  Not enough identity data to calculate
                 </div>
-              ) : (
-                <ScoreCircle score={selectedScores.score_b} label="Diversity Composition" />
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">Once members complete their profiles, scores light up here.</p>
-          )}
-        </div>
-        <div className="rounded-xl border bg-card p-6 flex flex-col items-center justify-center gap-3">
-          <CIGauge score={selectedScores?.blindness ?? 0} label="Collective Blindness" />
-          <p className="text-xs text-muted-foreground">
-            Lower is better — measures structural blind spots in this {selectedEntityObj?.type ?? "group"}.
-          </p>
-        </div>
+                <span className="text-sm font-medium">Diversity Composition (Score B)</span>
+              </div>
+            ) : (
+              <FilledCircle score={selectedScores.score_b} size={180} label="Diversity Composition (Score B)" />
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Once members complete their profiles, scores light up here.</p>
+        )}
       </div>
+
+      {/* Variable Explorer */}
+      {effectiveSelection && selectedScores && (
+        <VariableExplorer
+          entityId={effectiveSelection}
+          members={selectedMembers}
+          hasIdentityScore={selectedScores.score_b !== null}
+        />
+      )}
+
+      {/* Collective Blindness panel */}
+      <BlindnessPanel members={selectedMembers} blindnessScore={selectedScores?.blindness ?? 0} />
+
 
       {/* Composition charts */}
       <div className="grid md:grid-cols-3 gap-4">
@@ -305,7 +311,7 @@ function DashboardPage() {
                   <td className="py-2 px-2 tabular-nums">{r.members}</td>
                   <td className="py-2 px-2">
                     <div className="flex items-center gap-3">
-                      <ScoreCircle score={r.score_c} label="" size={60} />
+                      <FilledCircle score={r.score_c} size={80} />
                       <span className="tabular-nums font-semibold">{r.score_c}</span>
                     </div>
                   </td>

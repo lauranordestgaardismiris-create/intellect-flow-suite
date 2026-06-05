@@ -1,0 +1,1 @@
+ALTER TABLE public.ci_scores ADD COLUMN IF NOT EXISTS variable_insights jsonb NOT NULL DEFAULT '{}'::jsonb;

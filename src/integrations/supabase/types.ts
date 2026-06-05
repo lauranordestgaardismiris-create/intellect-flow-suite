@@ -67,6 +67,7 @@ export type Database = {
           score_c: number | null
           sub_scores: Json
           total_users: number
+          variable_insights: Json
         }
         Insert: {
           computed_at?: string
@@ -78,6 +79,7 @@ export type Database = {
           score_c?: number | null
           sub_scores?: Json
           total_users?: number
+          variable_insights?: Json
         }
         Update: {
           computed_at?: string
@@ -89,6 +91,7 @@ export type Database = {
           score_c?: number | null
           sub_scores?: Json
           total_users?: number
+          variable_insights?: Json
         }
         Relationships: [
           {
