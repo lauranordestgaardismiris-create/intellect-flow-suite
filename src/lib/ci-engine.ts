@@ -77,6 +77,12 @@ export type MemberRow = {
   information_processing?: { depth: number; breadth: number; structured: number; unstructured: number } | null;
   // Meta cognition 0-100
   meta_cognition?: number | null;
+  // Demographic / identity (for Diversity Composition score)
+  gender?: string | null;
+  age?: number | null;
+  nationalities?: string[];
+  neurodivergence?: string | null;
+  disability?: string | null;
 };
 
 // ─── Sub-scores ──────────────────────────────────────────────────────────────
@@ -233,6 +239,54 @@ export function confidenceLabel(n: number): "low" | "medium" | "high" {
   if (n < 5) return "low";
   if (n < 15) return "medium";
   return "high";
+}
+
+// ─── Back-compat exports ─────────────────────────────────────────────────────
+
+// ─── Behavioural / Diversity / Combined scores ────────────────────────────────
+
+// Score A — Behavioural Profile: behavioural + cognitive + skill aggregate.
+export function computeBehaviouralScore(sub: SubScores): number {
+  return computeCI(sub);
+}
+
+// Score B — Diversity Composition: identity & demographic spread.
+export function computeDiversityScore(members: MemberRow[]): number {
+  if (members.length === 0) return 0;
+  const parts: number[] = [];
+
+  const gender = new Map<string, number>();
+  for (const m of members) if (m.gender) gender.set(m.gender.toLowerCase(), (gender.get(m.gender.toLowerCase()) ?? 0) + 1);
+  if (gender.size) parts.push(shannonDiversity([...gender.values()]));
+
+  const nat = new Map<string, number>();
+  for (const m of members) for (const n of (m.nationalities ?? [])) nat.set(n.toLowerCase(), (nat.get(n.toLowerCase()) ?? 0) + 1);
+  if (nat.size) parts.push(shannonDiversity([...nat.values()]));
+
+  const ages = members.map((m) => m.age).filter((a): a is number => typeof a === "number");
+  if (ages.length >= 2) {
+    const bucketCounts = new Map<number, number>();
+    for (const a of ages) {
+      const b = Math.floor(a / 10);
+      bucketCounts.set(b, (bucketCounts.get(b) ?? 0) + 1);
+    }
+    const bucketEntropy = shannonDiversity([...bucketCounts.values()]);
+    const spread = Math.min(100, Math.round((stddev(ages) / 15) * 100));
+    parts.push(Math.round((bucketEntropy + spread) / 2));
+  }
+
+  const nDecl = members.filter((m) => m.neurodivergence && m.neurodivergence.trim().length > 0).length;
+  const dDecl = members.filter((m) => m.disability && m.disability.trim().length > 0).length;
+  const decl = (nDecl + dDecl) / (members.length * 2);
+  const declScore = Math.round(clamp01to100(100 - Math.abs(decl - 0.3) * 220));
+  parts.push(declScore);
+
+  return Math.round(clamp01to100(mean(parts)));
+}
+
+// Score C — Combined Collective Intelligence: behavioural (70%) + diversity (30%).
+export function computeCombinedScore(scoreA: number, scoreB: number): number {
+  return Math.round(clamp01to100(scoreA * 0.7 + scoreB * 0.3));
 }
 
 // ─── Back-compat exports ─────────────────────────────────────────────────────
