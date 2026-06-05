@@ -203,7 +203,7 @@ function DashboardPage() {
           blindness: sc?.blindness ?? 0,
         };
       })
-      .sort((a, b) => b.score_c - a.score_c);
+      .sort((a: any, b: any) => b.score_c - a.score_c);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [snap, isAdmin]);
 
@@ -287,7 +287,7 @@ function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {comparisonRows.map((r) => (
+              {comparisonRows.map((r: any) => (
                 <tr key={r.id} className="border-b last:border-0 hover:bg-accent/30">
                   <td className="py-2 pr-3">
                     <div className="font-medium">{r.name}</div>
