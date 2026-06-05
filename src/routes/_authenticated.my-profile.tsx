@@ -5,6 +5,8 @@ import { useMemo } from "react";
 import { getMyProfile } from "@/lib/my-profile.functions";
 import { DiscBar } from "@/components/disc-bar";
 import { PersonalIntelligenceProfile } from "@/components/personal-intelligence-profile";
+import { TeamCISection } from "@/components/team-ci-section";
+import { ProfileVsTeam } from "@/components/profile-vs-team";
 import { Button } from "@/components/ui/button";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend,
@@ -130,6 +132,9 @@ function MyProfilePage() {
       </div>
 
       {p.onboarding_complete && <PersonalIntelligenceProfile data={data} />}
+
+      {p.onboarding_complete && <TeamCISection team={data.team} />}
+      {p.onboarding_complete && <ProfileVsTeam data={data} />}
 
       {p.onboarding_complete && (
         <div className="flex items-center gap-2 pt-2">
