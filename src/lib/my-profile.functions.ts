@@ -124,7 +124,7 @@ export const getMyProfile = createServerFn({ method: "GET" })
 
     const peerIds = groupIds.filter((id) => id !== userId);
     let discAvg: any = null, cogAvg: any = null, wsAvg: any = null, metaAvg: number | null = null;
-    let teamScores: { score_a: number; score_b: number; score_c: number; blindness: number } | null = null;
+    let teamScores: { score_a: number; score_b: number | null; score_c: number; blindness: number } | null = null;
     let completedCount = 0;
 
     if (groupIds.length > 1) {
