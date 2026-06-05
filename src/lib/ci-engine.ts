@@ -243,50 +243,109 @@ export function confidenceLabel(n: number): "low" | "medium" | "high" {
 
 // ─── Back-compat exports ─────────────────────────────────────────────────────
 
-// ─── Behavioural / Diversity / Combined scores ────────────────────────────────
+// ─── Behavioural / Diversity / Combined scores (v2 — spec'd dimensions) ─────
 
-// Score A — Behavioural Profile: behavioural + cognitive + skill aggregate.
-export function computeBehaviouralScore(sub: SubScores): number {
-  return computeCI(sub);
+const JUNIOR_ROLES = new Set(["intern", "student_worker", "graduate_trainee", "analyst"]);
+const MID_ROLES = new Set(["individual_contributor", "specialist", "consultant", "freelancer", "team_lead"]);
+const SENIOR_ROLES = new Set(["manager", "senior_management", "executive"]);
+
+function roleTier(role: string | null | undefined): "junior" | "mid" | "senior" | null {
+  if (!role) return null;
+  if (JUNIOR_ROLES.has(role)) return "junior";
+  if (MID_ROLES.has(role)) return "mid";
+  if (SENIOR_ROLES.has(role)) return "senior";
+  return null;
 }
 
-// Score B — Diversity Composition: identity & demographic spread.
-export function computeDiversityScore(members: MemberRow[]): number {
+function entropyOf<T>(items: T[], key: (x: T) => string | null | undefined): number {
+  const counts = new Map<string, number>();
+  for (const it of items) {
+    const k = key(it);
+    if (!k) continue;
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  if (counts.size === 0) return 0;
+  return shannonDiversity([...counts.values()]);
+}
+
+// Score A — Behavioural / Skills. Equal weight across the 7 dimensions.
+// Accepts either members[] (v2) or a SubScores object (legacy: delegates to computeCI).
+export function computeBehaviouralScore(arg: SubScores | MemberRow[]): number {
+  if (!Array.isArray(arg)) return computeCI(arg);
+  const members = arg;
   if (members.length === 0) return 0;
+
+  // 1. DISC dominant entropy
+  const disc = entropyOf(members, (m) => m.disc_dominant);
+
+  // 2. Cognitive dominant entropy
+  const cog = entropyOf(members, (m) => m.cognitive_dominant);
+
+  // 3. Problem-solving diversity (spread of structured vs exploratory)
+  const psVectors = members
+    .map((m) => m.problem_solving ? [m.problem_solving.structured, m.problem_solving.exploratory] : null)
+    .filter((v): v is number[] => v !== null);
+  const ps = multiDimSpread(psVectors);
+
+  // 4. Information-processing diversity (depth vs breadth)
+  const ipVectors = members
+    .map((m) => m.information_processing ? [m.information_processing.depth, m.information_processing.breadth] : null)
+    .filter((v): v is number[] => v !== null);
+  const ip = multiDimSpread(ipVectors);
+
+  // 5. Collaboration balance
+  const collab = members.map((m) => m.collaboration);
+  const indep = members.map((m) => m.independent_work ?? 100 - m.collaboration);
+  const collabBalance = clamp01to100(100 - Math.abs(mean(collab) - mean(indep)));
+
+  // 6. Meta-cognition average
+  const mcVals = members.map((m) => m.meta_cognition).filter((v): v is number => typeof v === "number");
+  const meta = mcVals.length ? mean(mcVals) : 0;
+
+  // 7. Role/seniority tier spread
+  const roleSpread = entropyOf(members, (m) => roleTier(m.role_type));
+
+  return Math.round(clamp01to100(mean([disc, cog, ps, ip, collabBalance, meta, roleSpread])));
+}
+
+export type DiversityMember = MemberRow & {
+  years_experience_total?: number | null;
+  education_level?: string | null;
+};
+
+// Score B — Identity / Demographics. Returns null when fewer than 2 dimensions
+// have at least 5 members with non-null values.
+export function computeDiversityScore(members: DiversityMember[]): number | null {
+  if (members.length === 0) return null;
+  const MIN = 5;
   const parts: number[] = [];
 
-  const gender = new Map<string, number>();
-  for (const m of members) if (m.gender) gender.set(m.gender.toLowerCase(), (gender.get(m.gender.toLowerCase()) ?? 0) + 1);
-  if (gender.size) parts.push(shannonDiversity([...gender.values()]));
+  const gendered = members.filter((m) => m.gender && m.gender.trim().length > 0);
+  if (gendered.length >= MIN) parts.push(entropyOf(gendered, (m) => (m.gender ?? "").toLowerCase()));
 
-  const nat = new Map<string, number>();
-  for (const m of members) for (const n of (m.nationalities ?? [])) nat.set(n.toLowerCase(), (nat.get(n.toLowerCase()) ?? 0) + 1);
-  if (nat.size) parts.push(shannonDiversity([...nat.values()]));
+  const natted = members.filter((m) => (m.nationalities ?? []).length > 0);
+  if (natted.length >= MIN) parts.push(entropyOf(natted, (m) => (m.nationalities?.[0] ?? "").toLowerCase()));
 
-  const ages = members.map((m) => m.age).filter((a): a is number => typeof a === "number");
-  if (ages.length >= 2) {
-    const bucketCounts = new Map<number, number>();
-    for (const a of ages) {
-      const b = Math.floor(a / 10);
-      bucketCounts.set(b, (bucketCounts.get(b) ?? 0) + 1);
-    }
-    const bucketEntropy = shannonDiversity([...bucketCounts.values()]);
-    const spread = Math.min(100, Math.round((stddev(ages) / 15) * 100));
-    parts.push(Math.round((bucketEntropy + spread) / 2));
+  const exped = members.filter((m) => typeof m.years_experience_total === "number");
+  if (exped.length >= MIN) {
+    const band = (y: number) => y <= 2 ? "0-2" : y <= 5 ? "3-5" : y <= 10 ? "6-10" : "11+";
+    parts.push(entropyOf(exped, (m) => band(m.years_experience_total as number)));
   }
 
-  const nDecl = members.filter((m) => m.neurodivergence && m.neurodivergence.trim().length > 0).length;
-  const dDecl = members.filter((m) => m.disability && m.disability.trim().length > 0).length;
-  const decl = (nDecl + dDecl) / (members.length * 2);
-  const declScore = Math.round(clamp01to100(100 - Math.abs(decl - 0.3) * 220));
-  parts.push(declScore);
+  const eduMembers = members.filter((m) => m.education_level && m.education_level.trim().length > 0);
+  if (eduMembers.length >= MIN) parts.push(entropyOf(eduMembers, (m) => (m.education_level ?? "").toLowerCase()));
 
+  const tiered = members.filter((m) => roleTier(m.role_type) !== null);
+  if (tiered.length >= MIN) parts.push(entropyOf(tiered, (m) => roleTier(m.role_type)));
+
+  if (parts.length < 2) return null;
   return Math.round(clamp01to100(mean(parts)));
 }
 
-// Score C — Combined Collective Intelligence: behavioural (70%) + diversity (30%).
-export function computeCombinedScore(scoreA: number, scoreB: number): number {
-  return Math.round(clamp01to100(scoreA * 0.7 + scoreB * 0.3));
+// Score C — Combined. If Score B is null, Score C = Score A.
+export function computeCombinedScore(scoreA: number, scoreB: number | null): number {
+  if (scoreB === null) return scoreA;
+  return Math.round(clamp01to100((scoreA + scoreB) / 2));
 }
 
 // ─── Back-compat exports ─────────────────────────────────────────────────────

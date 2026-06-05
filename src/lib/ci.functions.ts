@@ -119,16 +119,18 @@ export const recomputeCIScores = createServerFn({ method: "POST" })
 
     function pushFor(entityId: string, group: typeof members) {
       const sub = computeSubScores(group as any);
-      const score = computeCI(sub);
       const blindness = computeBlindness(sub);
       const confidence = confidenceLabel(group.length);
-      const score_a = computeBehaviouralScore(sub);
+      const score_a = computeBehaviouralScore(group as any);
       const score_b = computeDiversityScore(group as any);
       const score_c = computeCombinedScore(score_a, score_b);
       rows.push({
         entity_id: entityId,
         org_id: org.id,
-        score,
+        score: score_c,
+        score_a,
+        score_b,
+        score_c,
         sub_scores: {
           ...sub,
           collective_blindness_score: blindness,

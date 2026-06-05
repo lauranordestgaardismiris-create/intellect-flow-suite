@@ -62,6 +62,9 @@ export type Database = {
           entity_id: string
           org_id: string
           score: number
+          score_a: number | null
+          score_b: number | null
+          score_c: number | null
           sub_scores: Json
           total_users: number
         }
@@ -70,6 +73,9 @@ export type Database = {
           entity_id: string
           org_id: string
           score?: number
+          score_a?: number | null
+          score_b?: number | null
+          score_c?: number | null
           sub_scores?: Json
           total_users?: number
         }
@@ -78,6 +84,9 @@ export type Database = {
           entity_id?: string
           org_id?: string
           score?: number
+          score_a?: number | null
+          score_b?: number | null
+          score_c?: number | null
           sub_scores?: Json
           total_users?: number
         }

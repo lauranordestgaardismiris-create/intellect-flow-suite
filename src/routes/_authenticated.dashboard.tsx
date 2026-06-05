@@ -128,9 +128,9 @@ function DashboardPage() {
       const r = snap.scores.find((s: any) => s.entity_id === entityId);
       if (!r) return null;
       return {
-        score_a: r.sub_scores?.score_a ?? r.score ?? 0,
-        score_b: r.sub_scores?.score_b ?? 0,
-        score_c: r.sub_scores?.score_c ?? r.score ?? 0,
+        score_a: r.score_a ?? r.sub_scores?.score_a ?? r.score ?? 0,
+        score_b: (r.score_b ?? r.sub_scores?.score_b ?? null) as number | null,
+        score_c: r.score_c ?? r.sub_scores?.score_c ?? r.score ?? 0,
         blindness: r.sub_scores?.collective_blindness_score ?? 0,
         total_users: r.total_users ?? 0,
         confidence: r.sub_scores?.confidence ?? "—",
@@ -199,7 +199,7 @@ function DashboardPage() {
           id: e.id, name: e.name, type: e.type,
           members: members.length,
           completedPct: members.length ? Math.round((completed / members.length) * 100) : 0,
-          score_a: sc?.score_a ?? 0, score_b: sc?.score_b ?? 0, score_c: sc?.score_c ?? 0,
+          score_a: sc?.score_a ?? 0, score_b: (sc?.score_b ?? null) as number | null, score_c: sc?.score_c ?? 0,
           blindness: sc?.blindness ?? 0,
         };
       })
@@ -248,7 +248,16 @@ function DashboardPage() {
             <div className="grid grid-cols-3 gap-4 justify-items-center">
               <ScoreCircle score={selectedScores.score_c} label="Collective Intelligence" />
               <ScoreCircle score={selectedScores.score_a} label="Behavioural Profile" />
-              <ScoreCircle score={selectedScores.score_b} label="Diversity Composition" />
+              {selectedScores.score_b === null ? (
+                <div className="flex flex-col items-center gap-2 text-center max-w-[160px]">
+                  <div className="h-[120px] w-[120px] rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-[11px] text-muted-foreground px-3 leading-tight">
+                    Not enough identity data to calculate
+                  </div>
+                  <span className="text-sm font-medium">Diversity Composition</span>
+                </div>
+              ) : (
+                <ScoreCircle score={selectedScores.score_b} label="Diversity Composition" />
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Once members complete their profiles, scores light up here.</p>
@@ -301,7 +310,7 @@ function DashboardPage() {
                     </div>
                   </td>
                   <td className="py-2 px-2 tabular-nums">{r.score_a}</td>
-                  <td className="py-2 px-2 tabular-nums">{r.score_b}</td>
+                  <td className="py-2 px-2 tabular-nums">{r.score_b === null ? <span className="text-muted-foreground">—</span> : r.score_b}</td>
                   <td className="py-2 px-2 tabular-nums">{r.blindness}</td>
                   <td className="py-2 px-2 tabular-nums">{r.completedPct}%</td>
                   <td className="py-2 pl-2">

@@ -52,7 +52,7 @@ export type MyProfilePayload = {
     cognitive_avg: { analytical: number; practical: number; relational: number; experimental: number } | null;
     work_style_avg: { collaboration: number; independent_work: number; idea_generation: number } | null;
     meta_cognition_avg: number | null;
-    scores: { score_a: number; score_b: number; score_c: number; blindness: number } | null;
+    scores: { score_a: number; score_b: number | null; score_c: number; blindness: number } | null;
   };
 };
 
@@ -124,7 +124,7 @@ export const getMyProfile = createServerFn({ method: "GET" })
 
     const peerIds = groupIds.filter((id) => id !== userId);
     let discAvg: any = null, cogAvg: any = null, wsAvg: any = null, metaAvg: number | null = null;
-    let teamScores: { score_a: number; score_b: number; score_c: number; blindness: number } | null = null;
+    let teamScores: { score_a: number; score_b: number | null; score_c: number; blindness: number } | null = null;
     let completedCount = 0;
 
     if (groupIds.length > 1) {
@@ -135,7 +135,7 @@ export const getMyProfile = createServerFn({ method: "GET" })
         { data: groupWs },
         { data: groupSkills },
       ] = await Promise.all([
-        supabase.from("profiles").select("id, role_type, age, gender, nationalities, neurodivergence, disability, problem_solving_style, information_processing_style, meta_cognition_score, onboarding_complete").in("id", groupIds),
+        supabase.from("profiles").select("id, role_type, age, gender, nationalities, neurodivergence, disability, education_level, years_experience_total, problem_solving_style, information_processing_style, meta_cognition_score, onboarding_complete").in("id", groupIds),
         supabase.from("disc_results").select("profile_id, d, i, s, c, dominant").in("profile_id", groupIds),
         supabase.from("cognitive_results").select("profile_id, analytical, practical, relational, experimental, dominant").in("profile_id", groupIds),
         supabase.from("work_style").select("profile_id, collaboration, independent_work, task_repetition, idea_generation").in("profile_id", groupIds),
@@ -202,10 +202,12 @@ export const getMyProfile = createServerFn({ method: "GET" })
             gender: p.gender ?? null, age: p.age ?? null,
             nationalities: p.nationalities ?? [],
             neurodivergence: p.neurodivergence ?? null, disability: p.disability ?? null,
+            education_level: p.education_level ?? null,
+            years_experience_total: typeof p.years_experience_total === "number" ? p.years_experience_total : null,
           };
         });
         const sub = computeSubScores(members as any);
-        const score_a = computeBehaviouralScore(sub);
+        const score_a = computeBehaviouralScore(members as any);
         const score_b = computeDiversityScore(members as any);
         const score_c = computeCombinedScore(score_a, score_b);
         const blindness = computeBlindness(sub);
