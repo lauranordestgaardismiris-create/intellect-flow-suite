@@ -13,6 +13,17 @@ function RiskTag({ score }: { score: number }) {
 }
 
 export function BlindnessPanel({ members, blindnessScore }: Props) {
+  const ranked = useMemo(() => {
+    return DIMENSIONS.map((d) => ({
+      id: d.id,
+      meta: d,
+      score: computeDimension(d.id, members).score,
+    }))
+      .filter((r): r is { id: typeof r.id; meta: typeof r.meta; score: number } => typeof r.score === "number")
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 3);
+  }, [members]);
+
   if (members.length < 5) {
     return (
       <section className="rounded-xl border bg-card p-6">
@@ -24,17 +35,6 @@ export function BlindnessPanel({ members, blindnessScore }: Props) {
     );
   }
 
-  const ranked = useMemo(() => {
-    const all = DIMENSIONS.map((d) => ({
-      id: d.id,
-      meta: d,
-      score: computeDimension(d.id, members).score,
-    }))
-      .filter((r): r is { id: typeof r.id; meta: typeof r.meta; score: number } => typeof r.score === "number")
-      .sort((a, b) => a.score - b.score)
-      .slice(0, 3);
-    return all;
-  }, [members]);
 
   return (
     <section className="rounded-xl border bg-card p-6 space-y-5">
