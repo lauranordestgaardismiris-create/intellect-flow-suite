@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   computeCI, computeSubScores, computeBlindness, confidenceLabel,
+  computeBehaviouralScore, computeDiversityScore, computeCombinedScore,
   automationRisk, type MemberRow,
 } from "./ci-engine";
 
@@ -26,7 +27,7 @@ async function buildSnapshot(supabase: any, userId: string): Promise<OrgSnapshot
   const [{ data: org }, { data: entities }, { data: profiles }, { data: ps }, { data: ws }, { data: dr }, { data: cr }, { data: scores }] = await Promise.all([
     supabase.from("organizations").select("id, name").eq("id", orgId).single(),
     supabase.from("entities").select("id, name, type, parent_id").eq("org_id", orgId),
-    supabase.from("profiles").select("id, full_name, role_type, department_entity_id, team_entity_id, job_title, problem_solving_style, information_processing_style, meta_cognition_score").eq("org_id", orgId),
+    supabase.from("profiles").select("id, full_name, role_type, department_entity_id, team_entity_id, job_title, problem_solving_style, information_processing_style, meta_cognition_score, gender, age, nationalities, neurodivergence, disability, onboarding_complete").eq("org_id", orgId),
     supabase.from("profile_skills").select("profile_id, skill_id, skills(name)"),
     supabase.from("work_style").select("profile_id, collaboration, independent_work, task_repetition, idea_generation"),
     supabase.from("disc_results").select("profile_id, d, i, s, c, dominant"),
@@ -59,6 +60,12 @@ async function buildSnapshot(supabase: any, userId: string): Promise<OrgSnapshot
       role_type: p.role_type,
       department_entity_id: p.department_entity_id,
       team_entity_id: p.team_entity_id,
+      onboarding_complete: !!p.onboarding_complete,
+      gender: p.gender ?? null,
+      age: p.age ?? null,
+      nationalities: p.nationalities ?? [],
+      neurodivergence: p.neurodivergence ?? null,
+      disability: p.disability ?? null,
       skills: skillsByProfile.get(p.id) ?? [],
       disc_dominant: d?.dominant ?? null,
       cognitive_dominant: c?.dominant ?? null,
@@ -115,6 +122,9 @@ export const recomputeCIScores = createServerFn({ method: "POST" })
       const score = computeCI(sub);
       const blindness = computeBlindness(sub);
       const confidence = confidenceLabel(group.length);
+      const score_a = computeBehaviouralScore(sub);
+      const score_b = computeDiversityScore(group as any);
+      const score_c = computeCombinedScore(score_a, score_b);
       rows.push({
         entity_id: entityId,
         org_id: org.id,
@@ -123,6 +133,9 @@ export const recomputeCIScores = createServerFn({ method: "POST" })
           ...sub,
           collective_blindness_score: blindness,
           confidence,
+          score_a,
+          score_b,
+          score_c,
         },
         total_users: group.length,
         computed_at: new Date().toISOString(),
