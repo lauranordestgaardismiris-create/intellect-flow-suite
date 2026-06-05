@@ -310,7 +310,7 @@ function DashboardPage() {
                     </div>
                   </td>
                   <td className="py-2 px-2 tabular-nums">{r.score_a}</td>
-                  <td className="py-2 px-2 tabular-nums">{r.score_b}</td>
+                  <td className="py-2 px-2 tabular-nums">{r.score_b === null ? <span className="text-muted-foreground">—</span> : r.score_b}</td>
                   <td className="py-2 px-2 tabular-nums">{r.blindness}</td>
                   <td className="py-2 px-2 tabular-nums">{r.completedPct}%</td>
                   <td className="py-2 pl-2">
