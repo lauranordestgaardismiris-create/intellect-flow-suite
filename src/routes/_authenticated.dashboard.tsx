@@ -248,7 +248,16 @@ function DashboardPage() {
             <div className="grid grid-cols-3 gap-4 justify-items-center">
               <ScoreCircle score={selectedScores.score_c} label="Collective Intelligence" />
               <ScoreCircle score={selectedScores.score_a} label="Behavioural Profile" />
-              <ScoreCircle score={selectedScores.score_b} label="Diversity Composition" />
+              {selectedScores.score_b === null ? (
+                <div className="flex flex-col items-center gap-2 text-center max-w-[160px]">
+                  <div className="h-[120px] w-[120px] rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-[11px] text-muted-foreground px-3 leading-tight">
+                    Not enough identity data to calculate
+                  </div>
+                  <span className="text-sm font-medium">Diversity Composition</span>
+                </div>
+              ) : (
+                <ScoreCircle score={selectedScores.score_b} label="Diversity Composition" />
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Once members complete their profiles, scores light up here.</p>
