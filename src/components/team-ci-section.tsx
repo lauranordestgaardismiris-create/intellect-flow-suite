@@ -23,7 +23,16 @@ export function TeamCISection({ team }: { team: MyProfilePayload["team"] }) {
           <div className="grid grid-cols-3 gap-4 items-start justify-items-center">
             <ScoreCircle score={team.scores.score_c} label="Collective Intelligence" />
             <ScoreCircle score={team.scores.score_a} label="Behavioural Profile" />
-            <ScoreCircle score={team.scores.score_b} label="Diversity Composition" />
+            {team.scores.score_b === null ? (
+              <div className="flex flex-col items-center gap-2 text-center max-w-[160px]">
+                <div className="h-[120px] w-[120px] rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-[11px] text-muted-foreground px-3 leading-tight">
+                  Not enough identity data to calculate
+                </div>
+                <span className="text-sm font-medium">Diversity Composition</span>
+              </div>
+            ) : (
+              <ScoreCircle score={team.scores.score_b} label="Diversity Composition" />
+            )}
           </div>
           <p className="text-xs text-center text-muted-foreground">
             Based on {team.completed_count} member{team.completed_count === 1 ? "" : "s"} in {team.name ?? "your group"}.
