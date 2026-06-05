@@ -311,7 +311,7 @@ function DashboardPage() {
                   <td className="py-2 px-2 tabular-nums">{r.members}</td>
                   <td className="py-2 px-2">
                     <div className="flex items-center gap-3">
-                      <ScoreCircle score={r.score_c} label="" size={60} />
+                      <FilledCircle score={r.score_c} size={80} />
                       <span className="tabular-nums font-semibold">{r.score_c}</span>
                     </div>
                   </td>
