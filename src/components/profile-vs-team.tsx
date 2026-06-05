@@ -20,11 +20,12 @@ function ComparisonBar({ row }: { row: Row }) {
         <div className="absolute inset-y-0 left-0 bg-primary rounded-full" style={{ width: `${you}%` }} />
         {team !== null && (
           <div
-            className="absolute top-[-3px] bottom-[-3px] w-[2px] bg-foreground/70"
-            style={{ left: `calc(${team}% - 1px)` }}
+            className="absolute top-[-3px] bottom-[-3px] w-[2px]"
+            style={{ left: `calc(${team}% - 1px)`, background: "#AFA9EC" }}
             title={`Team avg: ${team}`}
           />
         )}
+
       </div>
       <div className={`text-right text-xs ${verdictColor}`}>
         <span className="tabular-nums text-foreground mr-2">{you}</span>

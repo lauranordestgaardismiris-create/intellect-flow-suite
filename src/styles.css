@@ -35,60 +35,89 @@
   --color-chart-5: var(--chart-5);
   --color-success: var(--success);
   --color-warning: var(--warning);
+
+  /* Brand palette aliases */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-mid: var(--brand-mid);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-light: var(--brand-light);
+  --color-brand-pale: var(--brand-pale);
+  --color-fill-subtle: var(--fill-subtle);
 }
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.99 0.005 250);
-  --foreground: oklch(0.18 0.04 265);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.04 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.04 265);
-  --primary: oklch(0.48 0.18 265);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.01 250);
-  --secondary-foreground: oklch(0.22 0.04 265);
-  --muted: oklch(0.96 0.01 250);
-  --muted-foreground: oklch(0.5 0.03 260);
-  --accent: oklch(0.94 0.04 260);
-  --accent-foreground: oklch(0.22 0.04 265);
-  --destructive: oklch(0.6 0.22 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.65 0.17 155);
-  --warning: oklch(0.78 0.16 75);
-  --border: oklch(0.92 0.01 255);
-  --input: oklch(0.92 0.01 255);
-  --ring: oklch(0.48 0.18 265);
-  --chart-1: oklch(0.55 0.2 265);
-  --chart-2: oklch(0.65 0.17 155);
-  --chart-3: oklch(0.7 0.18 50);
-  --chart-4: oklch(0.6 0.22 320);
-  --chart-5: oklch(0.6 0.2 200);
+
+  /* ── Brand palette (exact spec) ───────────────────────────── */
+  --brand-primary: #6B4AE8;
+  --brand-deep:    #1A1045;
+  --brand-dark:    #26215C;
+  --brand-mid:     #3C3489;
+  --brand-strong:  #534AB7;
+  --brand-muted:   #7F77DD;
+  --brand-light:   #9D87F7;
+  --brand-pale:    #AFA9EC;
+  --fill-subtle:   #EEEDFE;
+  --brand-border:  #CECBF6;
+  --brand-page:    #F7F6FF;
+
+  /* ── Semantic mapping ─────────────────────────────────────── */
+  --background: var(--brand-page);
+  --foreground: var(--brand-deep);
+  --card: #FFFFFF;
+  --card-foreground: var(--brand-deep);
+  --popover: #FFFFFF;
+  --popover-foreground: var(--brand-deep);
+  --primary: var(--brand-primary);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--fill-subtle);
+  --secondary-foreground: var(--brand-deep);
+  --muted: var(--fill-subtle);
+  --muted-foreground: color-mix(in oklab, #1e40af 75%, transparent);
+  --accent: var(--fill-subtle);
+  --accent-foreground: var(--brand-deep);
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --border: var(--brand-border);
+  --input: var(--brand-border);
+  --ring: var(--brand-primary);
+
+  /* Charts use brand palette */
+  --chart-1: var(--brand-primary);
+  --chart-2: var(--brand-muted);
+  --chart-3: var(--brand-light);
+  --chart-4: var(--brand-strong);
+  --chart-5: var(--brand-pale);
 }
 
 .dark {
-  --background: oklch(0.14 0.02 265);
-  --foreground: oklch(0.96 0.005 250);
-  --card: oklch(0.2 0.03 265);
-  --card-foreground: oklch(0.96 0.005 250);
-  --popover: oklch(0.2 0.03 265);
-  --popover-foreground: oklch(0.96 0.005 250);
-  --primary: oklch(0.7 0.18 265);
-  --primary-foreground: oklch(0.14 0.02 265);
-  --secondary: oklch(0.26 0.03 265);
-  --secondary-foreground: oklch(0.96 0.005 250);
-  --muted: oklch(0.26 0.03 265);
-  --muted-foreground: oklch(0.7 0.03 260);
-  --accent: oklch(0.3 0.05 265);
-  --accent-foreground: oklch(0.96 0.005 250);
-  --destructive: oklch(0.7 0.19 22);
-  --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.7 0.17 155);
-  --warning: oklch(0.8 0.16 75);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.7 0.18 265);
+  /* Keep the same palette in "dark" — design system is light-only */
+  --background: var(--brand-page);
+  --foreground: var(--brand-deep);
+  --card: #FFFFFF;
+  --card-foreground: var(--brand-deep);
+  --popover: #FFFFFF;
+  --popover-foreground: var(--brand-deep);
+  --primary: var(--brand-primary);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--fill-subtle);
+  --secondary-foreground: var(--brand-deep);
+  --muted: var(--fill-subtle);
+  --muted-foreground: color-mix(in oklab, #1e40af 75%, transparent);
+  --accent: var(--fill-subtle);
+  --accent-foreground: var(--brand-deep);
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --border: var(--brand-border);
+  --input: var(--brand-border);
+  --ring: var(--brand-primary);
 }
 
 @layer base {
@@ -96,6 +125,34 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
   }
+  h1, h2, h3, h4 {
+    color: var(--brand-deep);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  /* Soften default bold across the app per design system */
+  strong, b { font-weight: 500; }
+}
+
+@utility overline {
+  font-size: 11px;
+  font-weight: 500;
+  color: #2563EB;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+@utility text-caption {
+  font-size: 11px;
+  color: var(--brand-light);
+}
+
+@utility text-body {
+  font-size: 13px;
+  line-height: 1.7;
+  color: color-mix(in oklab, #1e40af 75%, transparent);
 }

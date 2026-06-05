@@ -241,10 +241,11 @@ export function PersonalIntelligenceProfile({ data }: Props) {
               <PolarAngleAxis dataKey="axis" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
               <PolarRadiusAxis tick={{ fill: "var(--muted-foreground)", fontSize: 10 }} domain={[0, 100]} />
               <Tooltip />
-              <Radar name="You" dataKey="you" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.35} />
+              <Radar name="You" dataKey="you" stroke="#6B4AE8" fill="#6B4AE8" fillOpacity={0.12} strokeWidth={1.5} />
               {showTeam && (
-                <Radar name={`Team avg (${data.team.scope})`} dataKey="team" stroke="#a855f7" fill="#a855f7" fillOpacity={0.18} />
+                <Radar name={`Team avg (${data.team.scope})`} dataKey="team" stroke="#AFA9EC" fill="#AFA9EC" fillOpacity={0.12} strokeWidth={1.5} />
               )}
+
               <Legend />
             </RadarChart>
           </ResponsiveContainer>
