@@ -135,7 +135,7 @@ export const getMyProfile = createServerFn({ method: "GET" })
         { data: groupWs },
         { data: groupSkills },
       ] = await Promise.all([
-        supabase.from("profiles").select("id, role_type, age, gender, nationalities, neurodivergence, disability, problem_solving_style, information_processing_style, meta_cognition_score, onboarding_complete").in("id", groupIds),
+        supabase.from("profiles").select("id, role_type, age, gender, nationalities, neurodivergence, disability, education_level, years_experience_total, problem_solving_style, information_processing_style, meta_cognition_score, onboarding_complete").in("id", groupIds),
         supabase.from("disc_results").select("profile_id, d, i, s, c, dominant").in("profile_id", groupIds),
         supabase.from("cognitive_results").select("profile_id, analytical, practical, relational, experimental, dominant").in("profile_id", groupIds),
         supabase.from("work_style").select("profile_id, collaboration, independent_work, task_repetition, idea_generation").in("profile_id", groupIds),
