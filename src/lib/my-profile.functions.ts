@@ -97,52 +97,119 @@ export const getMyProfile = createServerFn({ method: "GET" })
     ]);
 
     // Team scope: prefer same team, fallback to same department, fallback to company.
+    // Build the group as ALL profiles in scope (including self) for aggregate scores.
     let scope: "team" | "department" | "company" | "none" = "none";
     let groupName: string | null = null;
-    let peerIds: string[] = [];
+    let groupIds: string[] = [];
 
-    async function loadPeers(filterCol: string, filterVal: string): Promise<string[]> {
-      const { data } = await supabase.from("profiles").select("id").eq("org_id", profile.org_id).eq(filterCol, filterVal);
-      return (data ?? []).map((r: any) => r.id).filter((id: string) => id !== userId);
+    async function loadGroup(filterCol: string | null, filterVal: string | null): Promise<string[]> {
+      let q = supabase.from("profiles").select("id").eq("org_id", profile.org_id);
+      if (filterCol && filterVal) q = q.eq(filterCol, filterVal);
+      const { data } = await q;
+      return (data ?? []).map((r: any) => r.id);
     }
 
     if (profile.team_entity_id) {
-      peerIds = await loadPeers("team_entity_id", profile.team_entity_id);
-      if (peerIds.length) { scope = "team"; groupName = teamEnt?.name ?? null; }
+      groupIds = await loadGroup("team_entity_id", profile.team_entity_id);
+      if (groupIds.length > 1) { scope = "team"; groupName = teamEnt?.name ?? null; }
     }
-    if (!peerIds.length && profile.department_entity_id) {
-      peerIds = await loadPeers("department_entity_id", profile.department_entity_id);
-      if (peerIds.length) { scope = "department"; groupName = deptEnt?.name ?? null; }
+    if (groupIds.length <= 1 && profile.department_entity_id) {
+      groupIds = await loadGroup("department_entity_id", profile.department_entity_id);
+      if (groupIds.length > 1) { scope = "department"; groupName = deptEnt?.name ?? null; }
     }
-    if (!peerIds.length) {
-      const { data } = await supabase.from("profiles").select("id").eq("org_id", profile.org_id);
-      peerIds = (data ?? []).map((r: any) => r.id).filter((id: string) => id !== userId);
-      if (peerIds.length) { scope = "company"; groupName = org?.name ?? null; }
+    if (groupIds.length <= 1) {
+      groupIds = await loadGroup(null, null);
+      if (groupIds.length > 1) { scope = "company"; groupName = org?.name ?? null; }
     }
 
-    let discAvg: any = null, cogAvg: any = null;
-    if (peerIds.length) {
-      const [{ data: peerDisc }, { data: peerCog }] = await Promise.all([
-        supabase.from("disc_results").select("d, i, s, c").in("profile_id", peerIds),
-        supabase.from("cognitive_results").select("analytical, practical, relational, experimental").in("profile_id", peerIds),
+    const peerIds = groupIds.filter((id) => id !== userId);
+    let discAvg: any = null, cogAvg: any = null, wsAvg: any = null, metaAvg: number | null = null;
+    let teamScores: { score_a: number; score_b: number; score_c: number; blindness: number } | null = null;
+    let completedCount = 0;
+
+    if (groupIds.length > 1) {
+      const [
+        { data: groupProfiles },
+        { data: groupDisc },
+        { data: groupCog },
+        { data: groupWs },
+        { data: groupSkills },
+      ] = await Promise.all([
+        supabase.from("profiles").select("id, role_type, age, gender, nationalities, neurodivergence, disability, problem_solving_style, information_processing_style, meta_cognition_score, onboarding_complete").in("id", groupIds),
+        supabase.from("disc_results").select("profile_id, d, i, s, c, dominant").in("profile_id", groupIds),
+        supabase.from("cognitive_results").select("profile_id, analytical, practical, relational, experimental, dominant").in("profile_id", groupIds),
+        supabase.from("work_style").select("profile_id, collaboration, independent_work, task_repetition, idea_generation").in("profile_id", groupIds),
+        supabase.from("profile_skills").select("profile_id, skills(name)").in("profile_id", groupIds),
       ]);
-      if (peerDisc?.length) {
-        const n = peerDisc.length;
-        discAvg = {
-          d: Math.round(peerDisc.reduce((a: number, r: any) => a + r.d, 0) / n),
-          i: Math.round(peerDisc.reduce((a: number, r: any) => a + r.i, 0) / n),
-          s: Math.round(peerDisc.reduce((a: number, r: any) => a + r.s, 0) / n),
-          c: Math.round(peerDisc.reduce((a: number, r: any) => a + r.c, 0) / n),
-        };
-      }
-      if (peerCog?.length) {
-        const n = peerCog.length;
-        cogAvg = {
-          analytical: Math.round(peerCog.reduce((a: number, r: any) => a + r.analytical, 0) / n),
-          practical: Math.round(peerCog.reduce((a: number, r: any) => a + r.practical, 0) / n),
-          relational: Math.round(peerCog.reduce((a: number, r: any) => a + r.relational, 0) / n),
-          experimental: Math.round(peerCog.reduce((a: number, r: any) => a + r.experimental, 0) / n),
-        };
+      completedCount = (groupProfiles ?? []).filter((p: any) => p.onboarding_complete).length;
+
+      // Peer-only averages for "your profile vs team" comparison
+      const peerDisc = (groupDisc ?? []).filter((r: any) => r.profile_id !== userId);
+      const peerCog = (groupCog ?? []).filter((r: any) => r.profile_id !== userId);
+      const peerWs = (groupWs ?? []).filter((r: any) => r.profile_id !== userId);
+      const peerMeta = (groupProfiles ?? [])
+        .filter((p: any) => p.id !== userId && typeof p.meta_cognition_score === "number")
+        .map((p: any) => Number(p.meta_cognition_score));
+      const avg = (arr: number[]) => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+      if (peerDisc.length) discAvg = {
+        d: avg(peerDisc.map((r: any) => r.d)), i: avg(peerDisc.map((r: any) => r.i)),
+        s: avg(peerDisc.map((r: any) => r.s)), c: avg(peerDisc.map((r: any) => r.c)),
+      };
+      if (peerCog.length) cogAvg = {
+        analytical: avg(peerCog.map((r: any) => r.analytical)),
+        practical: avg(peerCog.map((r: any) => r.practical)),
+        relational: avg(peerCog.map((r: any) => r.relational)),
+        experimental: avg(peerCog.map((r: any) => r.experimental)),
+      };
+      if (peerWs.length) wsAvg = {
+        collaboration: avg(peerWs.map((r: any) => r.collaboration)),
+        independent_work: avg(peerWs.map((r: any) => r.independent_work)),
+        idea_generation: avg(peerWs.map((r: any) => r.idea_generation)),
+      };
+      if (peerMeta.length) metaAvg = avg(peerMeta);
+
+      // Compute team-level CI scores (A/B/C) when at least 5 profiles completed
+      if (completedCount >= 5) {
+        const discById = new Map<string, any>(); for (const r of groupDisc ?? []) discById.set(r.profile_id, r);
+        const cogById = new Map<string, any>(); for (const r of groupCog ?? []) cogById.set(r.profile_id, r);
+        const wsById = new Map<string, any>(); for (const r of groupWs ?? []) wsById.set(r.profile_id, r);
+        const skillsById = new Map<string, string[]>();
+        for (const row of groupSkills ?? []) {
+          const name = (row as any).skills?.name; if (!name) continue;
+          const arr = skillsById.get((row as any).profile_id) ?? [];
+          arr.push(name); skillsById.set((row as any).profile_id, arr);
+        }
+        const members = (groupProfiles ?? []).filter((p: any) => p.onboarding_complete).map((p: any) => {
+          const d = discById.get(p.id); const c = cogById.get(p.id); const w = wsById.get(p.id);
+          const pss = p.problem_solving_style ?? null; const ips = p.information_processing_style ?? null;
+          return {
+            role_type: p.role_type,
+            skills: skillsById.get(p.id) ?? [],
+            disc_dominant: d?.dominant ?? null,
+            cognitive_dominant: c?.dominant ?? null,
+            collaboration: w?.collaboration ?? 50,
+            independent_work: w?.independent_work ?? 50,
+            idea_generation: w?.idea_generation ?? 50,
+            task_repetition: w?.task_repetition ?? 50,
+            disc: d ? { d: d.d, i: d.i, s: d.s, c: d.c } : null,
+            cognitive: c ? { analytical: c.analytical, practical: c.practical, relational: c.relational, experimental: c.experimental } : null,
+            problem_solving: pss ? { structured: pss.structured_problem_solving ?? 0, exploratory: pss.exploratory_problem_solving ?? 0 } : null,
+            information_processing: ips ? {
+              depth: ips.depth_oriented_processing ?? 0, breadth: ips.breadth_oriented_processing ?? 0,
+              structured: ips.structured_information_preference ?? 0, unstructured: ips.unstructured_information_preference ?? 0,
+            } : null,
+            meta_cognition: typeof p.meta_cognition_score === "number" ? p.meta_cognition_score : (p.meta_cognition_score != null ? Number(p.meta_cognition_score) : null),
+            gender: p.gender ?? null, age: p.age ?? null,
+            nationalities: p.nationalities ?? [],
+            neurodivergence: p.neurodivergence ?? null, disability: p.disability ?? null,
+          };
+        });
+        const sub = computeSubScores(members as any);
+        const score_a = computeBehaviouralScore(sub);
+        const score_b = computeDiversityScore(members as any);
+        const score_c = computeCombinedScore(score_a, score_b);
+        const blindness = computeBlindness(sub);
+        teamScores = { score_a, score_b, score_c, blindness };
       }
     }
 
@@ -153,9 +220,7 @@ export const getMyProfile = createServerFn({ method: "GET" })
       try {
         const aiOut = await generateProfileInsights({
           full_name: profile.full_name,
-          disc,
-          cognitive: cog,
-          work_style: ws,
+          disc, cognitive: cog, work_style: ws,
           problem_solving_style: profile.problem_solving_style ?? null,
           information_processing_style: profile.information_processing_style ?? null,
           meta_cognition_score: profile.meta_cognition_score ?? null,
@@ -163,14 +228,11 @@ export const getMyProfile = createServerFn({ method: "GET" })
         if (aiOut) {
           insightsShort = aiOut.summary;
           insightsLong = aiOut.detail;
-          await supabase
-            .from("profiles")
-            .update({ insights_summary_short: insightsShort, insights_summary_long: insightsLong })
-            .eq("id", userId);
+          await supabase.from("profiles").update({
+            insights_summary_short: insightsShort, insights_summary_long: insightsLong,
+          }).eq("id", userId);
         }
-      } catch (e) {
-        console.error("Failed to generate profile insights:", e);
-      }
+      } catch (e) { console.error("Failed to generate profile insights:", e); }
     }
 
     return {
@@ -196,7 +258,14 @@ export const getMyProfile = createServerFn({ method: "GET" })
       languages: (pls ?? []).map((r: any) => r.languages?.name).filter(Boolean),
       skills: (pss ?? []).map((r: any) => ({ name: r.skills?.name, category: r.skills?.category })).filter((s: any) => s.name),
       disc, cognitive: cog, work_style: ws,
-      team: { name: groupName, scope, member_count: peerIds.length, disc_avg: discAvg, cognitive_avg: cogAvg },
+      team: {
+        name: groupName, scope,
+        member_count: groupIds.length,
+        completed_count: completedCount,
+        disc_avg: discAvg, cognitive_avg: cogAvg,
+        work_style_avg: wsAvg, meta_cognition_avg: metaAvg,
+        scores: teamScores,
+      },
     };
   });
 
