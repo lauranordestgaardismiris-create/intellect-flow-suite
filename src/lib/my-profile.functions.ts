@@ -52,7 +52,7 @@ export type MyProfilePayload = {
     cognitive_avg: { analytical: number; practical: number; relational: number; experimental: number } | null;
     work_style_avg: { collaboration: number; independent_work: number; idea_generation: number } | null;
     meta_cognition_avg: number | null;
-    scores: { score_a: number; score_b: number; score_c: number; blindness: number } | null;
+    scores: { score_a: number; score_b: number | null; score_c: number; blindness: number } | null;
   };
 };
 
