@@ -202,10 +202,12 @@ export const getMyProfile = createServerFn({ method: "GET" })
             gender: p.gender ?? null, age: p.age ?? null,
             nationalities: p.nationalities ?? [],
             neurodivergence: p.neurodivergence ?? null, disability: p.disability ?? null,
+            education_level: p.education_level ?? null,
+            years_experience_total: typeof p.years_experience_total === "number" ? p.years_experience_total : null,
           };
         });
         const sub = computeSubScores(members as any);
-        const score_a = computeBehaviouralScore(sub);
+        const score_a = computeBehaviouralScore(members as any);
         const score_b = computeDiversityScore(members as any);
         const score_c = computeCombinedScore(score_a, score_b);
         const blindness = computeBlindness(sub);
