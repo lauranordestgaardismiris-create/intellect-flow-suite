@@ -1,5 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  computeSubScores, computeBehaviouralScore, computeDiversityScore, computeCombinedScore,
+  computeBlindness,
+} from "./ci-engine";
 
 export type MyProfilePayload = {
   profile: {
@@ -43,8 +47,12 @@ export type MyProfilePayload = {
     name: string | null;
     scope: "team" | "department" | "company" | "none";
     member_count: number;
+    completed_count: number;
     disc_avg: { d: number; i: number; s: number; c: number } | null;
     cognitive_avg: { analytical: number; practical: number; relational: number; experimental: number } | null;
+    work_style_avg: { collaboration: number; independent_work: number; idea_generation: number } | null;
+    meta_cognition_avg: number | null;
+    scores: { score_a: number; score_b: number; score_c: number; blindness: number } | null;
   };
 };
 
