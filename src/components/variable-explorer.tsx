@@ -55,7 +55,7 @@ export function VariableExplorer({ entityId, members, hasIdentityScore }: Props)
     return m;
   }, [members]);
 
-  const insightMut = useMutation({
+  const insightMut = useMutation<{ insight: string; source: string }, Error, DimensionId>({
     mutationFn: (id: DimensionId) => fetchInsight({
       data: {
         entityId,
