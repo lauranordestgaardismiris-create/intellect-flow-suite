@@ -66,6 +66,8 @@ async function buildSnapshot(supabase: any, userId: string): Promise<OrgSnapshot
       nationalities: p.nationalities ?? [],
       neurodivergence: p.neurodivergence ?? null,
       disability: p.disability ?? null,
+      years_experience_total: p.years_experience_total ?? null,
+      education_level: p.education_level ?? null,
       skills: skillsByProfile.get(p.id) ?? [],
       disc_dominant: d?.dominant ?? null,
       cognitive_dominant: c?.dominant ?? null,
