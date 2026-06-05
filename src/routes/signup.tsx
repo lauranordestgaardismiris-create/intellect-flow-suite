@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
+import { LogoMark } from "@/components/logo-mark";
+
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -42,27 +44,35 @@ function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-background px-4">
-      <div className="w-full max-w-sm rounded-xl border bg-card p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight">Create your account</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {invite ? "You're joining an existing company workspace." : "Start a new company workspace."}
-        </p>
+    <div className="min-h-screen grid place-items-center px-4" style={{ background: "#F7F6FF" }}>
+      <div
+        className="w-full max-w-md p-10"
+        style={{ background: "#FFFFFF", border: "0.5px solid #CECBF6", borderRadius: 12 }}
+      >
+        <div className="flex flex-col items-center text-center">
+          <LogoMark size={32} />
+          <p className="mt-3" style={{ fontSize: 15, fontWeight: 500, color: "#1A1045" }}>Collective Intelligence</p>
+          <h1 className="mt-6" style={{ fontSize: 18, fontWeight: 500, color: "#1A1045" }}>Create your account</h1>
+          <p className="mt-1" style={{ fontSize: 13, color: "rgba(30,64,175,0.75)" }}>
+            {invite ? "You're joining an existing company workspace." : "Start a new company workspace."}
+          </p>
+        </div>
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Work email</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" style={{ fontSize: 12, color: "#3C3489" }}>Work email</Label>
             <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="password" style={{ fontSize: 12, color: "#3C3489" }}>Password</Label>
             <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={busy}>{busy ? "Creating…" : "Continue"}</Button>
         </form>
-        <p className="mt-4 text-sm text-muted-foreground">
-          Already registered? <Link to="/login" className="text-primary font-medium">Sign in</Link>
+        <p className="mt-5 text-center" style={{ fontSize: 13, color: "rgba(30,64,175,0.75)" }}>
+          Already registered? <Link to="/login" style={{ color: "#6B4AE8", fontWeight: 500 }}>Sign in</Link>
         </p>
       </div>
     </div>
   );
 }
+

@@ -1,7 +1,8 @@
-import { createFileRoute, redirect, Outlet, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useRouter } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { LogoMark } from "@/components/logo-mark";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
@@ -19,24 +20,53 @@ function AuthLayout() {
     return <div className="min-h-screen grid place-items-center text-sm text-muted-foreground">Loading…</div>;
   }
 
+  const initials = (user.email ?? "?").slice(0, 2).toUpperCase();
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/50 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-          <Link to="/dashboard" className="flex items-center gap-2 font-semibold">
-            <div className="h-6 w-6 rounded-md bg-gradient-to-br from-primary to-chart-4" />
-            <span>Collective Intelligence</span>
+    <div className="min-h-screen" style={{ background: "#F7F6FF" }}>
+      <header style={{ background: "#FFFFFF", borderBottom: "0.5px solid #CECBF6" }}>
+        <div className="mx-auto flex max-w-7xl items-center justify-between" style={{ padding: "14px 24px" }}>
+          <Link to="/dashboard" aria-label="Home">
+            <LogoMark size={22} withWordmark tagline />
           </Link>
-          <nav className="flex items-center gap-1 text-sm">
-            <Link to="/my-profile" className="px-3 py-1.5 rounded-md hover:bg-accent" activeProps={{ className: "bg-accent" }}>My profile</Link>
-            <Link to="/dashboard" className="px-3 py-1.5 rounded-md hover:bg-accent" activeProps={{ className: "bg-accent" }}>Dashboard</Link>
-            <Link to="/settings" className="px-3 py-1.5 rounded-md hover:bg-accent" activeProps={{ className: "bg-accent" }}>Settings</Link>
+          <nav className="flex items-center gap-1" style={{ fontSize: 13 }}>
+            <Link
+              to="/my-profile"
+              className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
+              style={{ color: "#1A1045" }}
+              activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
+            >My profile</Link>
+            <Link
+              to="/dashboard"
+              className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
+              style={{ color: "#1A1045" }}
+              activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
+            >Dashboard</Link>
+            <Link
+              to="/settings"
+              className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
+              style={{ color: "#1A1045" }}
+              activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
+            >Settings</Link>
             <button
               onClick={async () => { await supabase.auth.signOut(); router.navigate({ to: "/login" }); }}
-              className="ml-2 px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground"
+              className="ml-2 px-3 py-1.5 rounded-md"
+              style={{ color: "#7F77DD", fontSize: 13 }}
             >
               Sign out
             </button>
+            <span
+              aria-hidden
+              className="ml-2 grid place-items-center"
+              style={{
+                width: 32, height: 32, borderRadius: "50%",
+                background: "#EEEDFE", color: "#6B4AE8",
+                fontSize: 11, fontWeight: 500,
+                border: "0.5px solid #CECBF6",
+              }}
+            >
+              {initials}
+            </span>
           </nav>
         </div>
       </header>
@@ -44,3 +74,4 @@ function AuthLayout() {
     </div>
   );
 }
+

@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { useEffect } from "react";
+import { LogoMark } from "@/components/logo-mark";
+
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -45,25 +46,33 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-background px-4">
-      <div className="w-full max-w-sm rounded-xl border bg-card p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Continue to your Collective Intelligence workspace.</p>
+    <div className="min-h-screen grid place-items-center px-4" style={{ background: "#F7F6FF" }}>
+      <div
+        className="w-full max-w-md p-10"
+        style={{ background: "#FFFFFF", border: "0.5px solid #CECBF6", borderRadius: 12 }}
+      >
+        <div className="flex flex-col items-center text-center">
+          <LogoMark size={32} />
+          <p className="mt-3" style={{ fontSize: 15, fontWeight: 500, color: "#1A1045" }}>Collective Intelligence</p>
+          <h1 className="mt-6" style={{ fontSize: 18, fontWeight: 500, color: "#1A1045" }}>Sign in</h1>
+          <p className="mt-1" style={{ fontSize: 13, color: "rgba(30,64,175,0.75)" }}>Continue to your workspace.</p>
+        </div>
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" style={{ fontSize: 12, color: "#3C3489" }}>Email</Label>
             <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="password" style={{ fontSize: 12, color: "#3C3489" }}>Password</Label>
             <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
         </form>
-        <p className="mt-4 text-sm text-muted-foreground">
-          New here? <Link to="/signup" className="text-primary font-medium">Create an account</Link>
+        <p className="mt-5 text-center" style={{ fontSize: 13, color: "rgba(30,64,175,0.75)" }}>
+          New here? <Link to="/signup" style={{ color: "#6B4AE8", fontWeight: 500 }}>Create an account</Link>
         </p>
       </div>
     </div>
   );
 }
+
