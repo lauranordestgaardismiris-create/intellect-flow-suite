@@ -128,9 +128,9 @@ function DashboardPage() {
       const r = snap.scores.find((s: any) => s.entity_id === entityId);
       if (!r) return null;
       return {
-        score_a: r.sub_scores?.score_a ?? r.score ?? 0,
-        score_b: r.sub_scores?.score_b ?? 0,
-        score_c: r.sub_scores?.score_c ?? r.score ?? 0,
+        score_a: r.score_a ?? r.sub_scores?.score_a ?? r.score ?? 0,
+        score_b: (r.score_b ?? r.sub_scores?.score_b ?? null) as number | null,
+        score_c: r.score_c ?? r.sub_scores?.score_c ?? r.score ?? 0,
         blindness: r.sub_scores?.collective_blindness_score ?? 0,
         total_users: r.total_users ?? 0,
         confidence: r.sub_scores?.confidence ?? "—",
