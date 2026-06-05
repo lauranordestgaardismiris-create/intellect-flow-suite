@@ -45,8 +45,9 @@ function CognitiveRadar({ a, p, r, e, peerA, peerP, peerR, peerE, title }: {
           <PolarGrid stroke="var(--border)" />
           <PolarAngleAxis dataKey="axis" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
           <PolarRadiusAxis tick={{ fill: "var(--muted-foreground)", fontSize: 10 }} domain={[0, 100]} />
-          <Radar name="You" dataKey="you" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.35} />
-          {showTeam && <Radar name="Team avg" dataKey="team" stroke="#a855f7" fill="#a855f7" fillOpacity={0.2} />}
+          <Radar name="You" dataKey="you" stroke="#6B4AE8" fill="#6B4AE8" fillOpacity={0.12} strokeWidth={1.5} />
+          {showTeam && <Radar name="Team avg" dataKey="team" stroke="#AFA9EC" fill="#AFA9EC" fillOpacity={0.12} strokeWidth={1.5} />}
+
           {showTeam && <Legend />}
         </RadarChart>
       </ResponsiveContainer>
