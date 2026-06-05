@@ -32,7 +32,7 @@ async function buildSnapshot(supabase: any, userId: string): Promise<OrgSnapshot
     supabase.from("work_style").select("profile_id, collaboration, independent_work, task_repetition, idea_generation"),
     supabase.from("disc_results").select("profile_id, d, i, s, c, dominant"),
     supabase.from("cognitive_results").select("profile_id, analytical, practical, relational, experimental, dominant"),
-    supabase.from("ci_scores").select("entity_id, score, sub_scores, total_users").eq("org_id", orgId),
+    supabase.from("ci_scores").select("entity_id, score, sub_scores, total_users, score_a, score_b, score_c, variable_insights").eq("org_id", orgId),
   ]);
 
   const skillsByProfile = new Map<string, string[]>();
