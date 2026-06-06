@@ -1,7 +1,9 @@
-import { createFileRoute, Outlet, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { isSuperAdmin } from "@/lib/superadmin.functions";
 import { LogoMark } from "@/components/logo-mark";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -11,10 +13,24 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthLayout() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const checkSuper = useServerFn(isSuperAdmin);
+  const [isSuper, setIsSuper] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!loading && !user) router.navigate({ to: "/login" });
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!user) return;
+    checkSuper().then((r) => setIsSuper(r.isSuperAdmin)).catch(() => setIsSuper(false));
+  }, [user, checkSuper]);
+
+  useEffect(() => {
+    if (isSuper && pathname === "/dashboard") {
+      router.navigate({ to: "/superadmin" });
+    }
+  }, [isSuper, pathname, router]);
 
   if (loading || !user) {
     return <div className="min-h-screen grid place-items-center text-sm text-muted-foreground">Loading…</div>;
