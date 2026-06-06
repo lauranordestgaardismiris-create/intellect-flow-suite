@@ -64,6 +64,13 @@ function AuthLayout() {
               style={{ color: "#1A1045" }}
               activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
             >Settings</Link>
+            {isSuper && (
+              <Link
+                to="/superadmin"
+                className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
+                style={{ color: "#6B4AE8", fontWeight: 500 }}
+              >Founder view</Link>
+            )}
             <button
               onClick={async () => { await supabase.auth.signOut(); router.navigate({ to: "/login" }); }}
               className="ml-2 px-3 py-1.5 rounded-md"
