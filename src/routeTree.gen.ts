@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SuperadminRouteImport } from './routes/superadmin'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -24,6 +25,11 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuperadminRoute = SuperadminRouteImport.update({
+  id: '/superadmin',
+  path: '/superadmin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
+  '/superadmin': typeof SuperadminRoute
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/my-profile': typeof AuthenticatedMyProfileRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
+  '/superadmin': typeof SuperadminRoute
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/my-profile': typeof AuthenticatedMyProfileRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
+  '/superadmin': typeof SuperadminRoute
   '/terms': typeof TermsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/my-profile': typeof AuthenticatedMyProfileRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/privacy'
     | '/signup'
+    | '/superadmin'
     | '/terms'
     | '/dashboard'
     | '/my-profile'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/privacy'
     | '/signup'
+    | '/superadmin'
     | '/terms'
     | '/dashboard'
     | '/my-profile'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/privacy'
     | '/signup'
+    | '/superadmin'
     | '/terms'
     | '/_authenticated/dashboard'
     | '/_authenticated/my-profile'
@@ -161,6 +173,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRoute
+  SuperadminRoute: typeof SuperadminRoute
   TermsRoute: typeof TermsRoute
   ApiLeadRoute: typeof ApiLeadRoute
 }
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/superadmin': {
+      id: '/superadmin'
+      path: '/superadmin'
+      fullPath: '/superadmin'
+      preLoaderRoute: typeof SuperadminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -270,9 +290,20 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PrivacyRoute: PrivacyRoute,
   SignupRoute: SignupRoute,
+  SuperadminRoute: SuperadminRoute,
   TermsRoute: TermsRoute,
   ApiLeadRoute: ApiLeadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
