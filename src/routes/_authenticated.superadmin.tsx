@@ -12,6 +12,7 @@ function SuperAdminPage() {
   const router = useRouter();
   const checkSuper = useServerFn(isSuperAdmin);
   const fetchOrgs = useServerFn(getAllOrgs);
+  const createOrg = useServerFn(createOrgWithAdmin);
 
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [orgs, setOrgs] = useState<OrgRow[]>([]);
