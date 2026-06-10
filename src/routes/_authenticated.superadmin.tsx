@@ -2,7 +2,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { isSuperAdmin, getAllOrgs, createOrgWithAdmin, type OrgRow } from "@/lib/superadmin.functions";
-import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/_authenticated/superadmin")({
   component: SuperAdminPage,
