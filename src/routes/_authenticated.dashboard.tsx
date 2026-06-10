@@ -65,6 +65,10 @@ function DashboardPage() {
 
   useEffect(() => {
     if (!status) return;
+    if (status.role === "superadmin") {
+      navigate({ to: "/superadmin" });
+      return;
+    }
     if (!status.profile || !status.profile.onboarding_complete) {
       navigate({ to: "/onboarding" });
       return;
