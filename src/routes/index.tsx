@@ -64,7 +64,7 @@ function Landing() {
     if (!loading && user) router.navigate({ to: "/dashboard" });
   }, [user, loading, router]);
 
-  if (loading || user) {
+  if (user) {
     return <div className="min-h-screen grid place-items-center text-sm" style={{ color: COLORS.primaryLight }}>Loading…</div>;
   }
 
