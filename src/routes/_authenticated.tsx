@@ -46,30 +46,34 @@ function AuthLayout() {
             <LogoMark size={22} withWordmark tagline />
           </Link>
           <nav className="flex items-center gap-1" style={{ fontSize: 13 }}>
-            <Link
-              to="/my-profile"
-              className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
-              style={{ color: "#1A1045" }}
-              activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
-            >My profile</Link>
-            <Link
-              to="/dashboard"
-              className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
-              style={{ color: "#1A1045" }}
-              activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
-            >Dashboard</Link>
-            <Link
-              to="/settings"
-              className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
-              style={{ color: "#1A1045" }}
-              activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
-            >Settings</Link>
-            {isSuper && (
+            {isSuper ? (
               <Link
                 to="/superadmin"
                 className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
-                style={{ color: "#6B4AE8", fontWeight: 500 }}
-              >Founder view</Link>
+                style={{ color: "#1A1045" }}
+                activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
+              >Companies</Link>
+            ) : (
+              <>
+                <Link
+                  to="/my-profile"
+                  className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
+                  style={{ color: "#1A1045" }}
+                  activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
+                >My profile</Link>
+                <Link
+                  to="/dashboard"
+                  className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
+                  style={{ color: "#1A1045" }}
+                  activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
+                >Dashboard</Link>
+                <Link
+                  to="/settings"
+                  className="px-3 py-1.5 rounded-md hover:bg-[#EEEDFE]"
+                  style={{ color: "#1A1045" }}
+                  activeProps={{ style: { color: "#6B4AE8", background: "#EEEDFE", borderRadius: 6 } }}
+                >Settings</Link>
+              </>
             )}
             <button
               onClick={async () => { await supabase.auth.signOut(); router.navigate({ to: "/login" }); }}
@@ -78,18 +82,20 @@ function AuthLayout() {
             >
               Sign out
             </button>
-            <span
-              aria-hidden
-              className="ml-2 grid place-items-center"
-              style={{
-                width: 32, height: 32, borderRadius: "50%",
-                background: "#EEEDFE", color: "#6B4AE8",
-                fontSize: 11, fontWeight: 500,
-                border: "0.5px solid #CECBF6",
-              }}
-            >
-              {initials}
-            </span>
+            {!isSuper && (
+              <span
+                aria-hidden
+                className="ml-2 grid place-items-center"
+                style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  background: "#EEEDFE", color: "#6B4AE8",
+                  fontSize: 11, fontWeight: 500,
+                  border: "0.5px solid #CECBF6",
+                }}
+              >
+                {initials}
+              </span>
+            )}
           </nav>
         </div>
       </header>
