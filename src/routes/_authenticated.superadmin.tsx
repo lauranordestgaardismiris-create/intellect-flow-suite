@@ -45,19 +45,10 @@ function SuperAdminPage() {
     e.preventDefault();
     setError(null); setSubmitting(true);
     try {
-      const { data: org, error: oErr } = await supabase.from("organizations").insert({ name: orgName } as any).select("id").single();
-      if (oErr) throw new Error(oErr.message);
-      const { error: eErr } = await supabase.from("entities").insert({ org_id: org.id, name: orgName, type: "company" } as any);
-      if (eErr) throw new Error(eErr.message);
-      const token = (crypto as any).randomUUID();
-      const expires = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
-      const { error: iErr } = await supabase.from("org_invites").insert({
-        org_id: org.id, email: adminEmail, role: "org_admin", token, expires_at: expires,
-      } as any);
-      if (iErr) throw new Error(iErr.message);
-      setInviteLink(`${window.location.origin}/join?token=${token}`);
+      const r = await createOrg({ data: { org_name: orgName, admin_email: adminEmail } });
+      setInviteLink(`${window.location.origin}/join?token=${r.invite_token}`);
       setOrgName(""); setAdminEmail("");
-      const r = await fetchOrgs(); setOrgs(r.orgs);
+      const refreshed = await fetchOrgs(); setOrgs(refreshed.orgs);
     } catch (err: any) { setError(err?.message ?? "Failed"); }
     finally { setSubmitting(false); }
   };
