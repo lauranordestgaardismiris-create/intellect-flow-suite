@@ -128,11 +128,12 @@ export const createOrgWithAdmin = createServerFn({ method: "POST" })
       .insert({ org_id: org.id });
     if (wErr && !String(wErr.message).includes("duplicate")) throw new Error(wErr.message);
 
-    const { data: invite, error: invErr } = await (supabaseAdmin as any)
-      .from("admin_invites")
-      .insert({ email: data.admin_email, org_id: org.id, created_by: userId })
-      .select("token")
-      .single();
+    const token = (globalThis.crypto as any).randomUUID();
+    const expires = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
+    const { error: invErr } = await (supabaseAdmin as any)
+      .from("org_invites")
+      .insert({ email: data.admin_email, org_id: org.id, role: "org_admin", token, expires_at: expires, created_by: userId });
+    const invite = { token } as any;
     if (invErr) throw new Error(invErr.message);
 
     return { org_id: org.id, invite_token: invite.token };
